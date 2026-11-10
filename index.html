@@ -169,30 +169,55 @@ button { font: inherit; color: inherit; }
 @keyframes entrata { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 h1:focus { outline: none; }
 
-/* ---------- Home (tavole D · Mix) ---------- */
+/* ---------- Home (tavole D · Mix, decisioni M1) ---------- */
 .schermo { display: flex; flex-direction: column; min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
 .home {
   flex: 1; display: grid; gap: var(--space-7);
   grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: "testata" "protagonista" "riquadri" "faccende" "avviso";
-  grid-template-rows: auto auto auto auto 1fr;
+  grid-template-areas: "testata" "striscia" "protagonista" "info" "oggi" "faccende" "avviso";
+  grid-template-rows: auto auto auto auto auto auto 1fr;
 }
-.colonna-sinistra { display: contents; }
+.colonna-sinistra, .colonna-destra { display: contents; }
 .testata { grid-area: testata; display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); }
 .testata .etichetta { color: var(--ground-muted); font-size: 15px; }
 .testata-testi { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.protagonista { grid-area: protagonista; display: flex; align-items: center; gap: 36px; text-decoration: none; }
+/* Striscia dello stato dati (H5): sempre visibile, porta a Dati e impostazioni */
+.striscia-dati { grid-area: striscia; margin-top: calc(-1 * var(--space-5)); display: flex; align-items: center; gap: var(--space-3); min-height: 48px; color: var(--ground-ink); text-decoration: none; font-size: 15px; line-height: 21px; font-weight: 700; }
+.striscia-dati .testo { min-width: 0; overflow-wrap: anywhere; }
+.striscia-dati .frase { color: var(--ground-muted); font-weight: 600; }
+.striscia-dati svg { flex: none; stroke: var(--ground-muted); }
+/* Pannello protagonista: la categoria in evidenza */
+.protagonista { grid-area: protagonista; display: flex; align-items: center; gap: 36px; cursor: pointer; }
 .protagonista-testi { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .protagonista-testi .etichetta { color: var(--ink-muted); font-size: 14px; display: flex; align-items: center; gap: 10px; }
-.frase-hero { color: #3F4B55; line-height: 1.4; }
-.protagonista .pulsante-principale { align-self: flex-start; margin-top: 6px; }
-.riquadri-home { grid-area: riquadri; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
-.riquadri-home .riquadro { min-height: 120px; }
+.frase-hero { margin: 0; color: #3F4B55; line-height: 1.4; }
+.azioni-hero { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: 6px; }
+.azioni-hero a { text-decoration: none; }
+.pulsante-secondario:disabled { background: transparent; box-shadow: none; border: 1.5px dashed rgba(27,34,40,0.32); color: var(--ink-muted); cursor: default; }
+/* Info della categoria: due riquadri alla volta, si sfogliano */
+.info { grid-area: info; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.sfoglia { overflow: hidden; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
+.binario { display: flex; gap: var(--space-5); transition: transform 380ms cubic-bezier(.2,.7,.2,1); }
+.binario.trascina { transition: none; }
+.pagina { flex: 0 0 100%; min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+.pagina .riquadro { min-height: 120px; }
+.pagina .intera { grid-column: 1 / -1; }
 .riquadro.contatore { flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--space-5); }
-.contatore .testi { display: flex; flex-direction: column; gap: 4px; }
+.contatore .testi { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .numero { font-family: var(--font-tecnico); font-size: 36px; line-height: 36px; font-weight: 700; }
 .numero small { font-size: 18px; color: var(--ink-muted); }
 .contatore .frase { font-size: 15px; color: var(--ink-muted); }
+.pallini { display: flex; justify-content: center; }
+.pallino { width: 40px; height: 40px; padding: 0; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; border-radius: var(--radius-pill); }
+.pallino::before { content: ""; width: 8px; height: 8px; border-radius: 4px; background: var(--ground-muted); opacity: 0.55; transition: width 300ms ease, background-color 300ms ease, opacity 300ms ease; }
+.pallino[aria-current="true"]::before { width: 22px; background: var(--topic); opacity: 1; }
+/* Spazi riservati: visibili e spenti, come le tessere non pronte */
+.spento { background: var(--tile-off); border: 1px solid var(--line); color: var(--tile-off-ink); box-shadow: none; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.spento .etichetta { color: var(--ground-muted); }
+.spento .titolo-riquadro { color: var(--tile-off-ink); font-size: 19px; line-height: 25px; }
+.frase-spenta { margin: 0; font-size: 15px; line-height: 21px; color: var(--ground-muted); }
+.oggi { grid-area: oggi; min-height: 120px; padding: 22px var(--space-6); border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: center; gap: var(--space-2); }
+/* Altre faccende */
 .faccende { grid-area: faccende; display: flex; flex-direction: column; gap: 14px; }
 .titolo-sezione { margin: 0; font-size: 20px; line-height: 26px; font-weight: 800; }
 .tessere { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
@@ -200,16 +225,22 @@ h1:focus { outline: none; }
   min-height: 124px; border-radius: var(--radius-md); border: 1px solid var(--line);
   background: var(--tile-off); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
   padding: 18px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: var(--space-2);
-  color: var(--tile-off-ink); text-decoration: none;
+  color: var(--tile-off-ink); text-decoration: none; font: inherit; text-align: left;
 }
+.tessera:disabled { cursor: not-allowed; }
+.tessera.attiva { background: var(--panel); color: var(--ink); border-color: transparent; box-shadow: var(--shadow-rilievo); cursor: pointer; }
 .tessera svg { flex: none; stroke: var(--tema-icona); }
+.tessera.attiva svg { stroke: var(--ink); }
 .tessera .testi { display: flex; flex-direction: column; gap: 4px; }
 .tessera .nome { font-size: 17px; font-weight: 700; }
 .tessera .etichetta { font-size: 12px; color: var(--ground-muted); }
+/* Barra degli avvisi (H4) */
 .barra-avviso { grid-area: avviso; align-self: end; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: 18px 22px; border-radius: var(--radius-md); background: var(--panel); color: var(--ink); box-shadow: var(--shadow-rilievo); }
 .barra-avviso .testi { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .barra-avviso strong { font-size: 16px; font-weight: 700; }
 .barra-avviso span { font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+.barra-avviso.spento { background: var(--tile-off); color: var(--tile-off-ink); box-shadow: none; }
+.barra-avviso.spento span { color: var(--ground-muted); }
 .barra-avviso .pulsante-principale { flex: none; text-decoration: none; }
 .solo-lettori { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .piede { color: var(--ground-muted); }
@@ -295,14 +326,18 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
   .schermo { padding-top: 40px; padding-bottom: 40px; }
   .home {
     grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr);
-    grid-template-areas: "sinistra protagonista" "faccende faccende" "avviso avviso";
+    grid-template-areas: "sinistra destra" "faccende faccende" "avviso avviso";
     grid-template-rows: auto auto auto;
-    align-content: space-between; column-gap: 40px; row-gap: 32px;
+    align-content: space-between; column-gap: 40px; row-gap: 28px;
   }
-  .colonna-sinistra { grid-area: sinistra; display: flex; flex-direction: column; gap: var(--space-7); min-width: 0; }
-  .riquadri-home { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-  .protagonista { justify-content: center; gap: var(--space-7); padding: var(--space-7) var(--space-8); }
-  .protagonista .manopola { width: 270px; height: 270px; }
+  .colonna-sinistra { grid-area: sinistra; display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
+  .colonna-destra { grid-area: destra; display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
+  .striscia-dati { margin-top: calc(-1 * var(--space-4)); }
+  .pagina { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .pagina .riquadro { min-height: 112px; }
+  .oggi { min-height: 96px; }
+  .protagonista { flex: 1; justify-content: center; gap: var(--space-7); padding: var(--space-6) var(--space-8); }
+  .protagonista .manopola { width: 240px; height: 240px; }
   .faccende .titolo-sezione { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .tessere { gap: var(--space-5); }
   .tessera { min-height: 92px; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--space-4); }
@@ -316,9 +351,12 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
   .home, .interna { gap: var(--space-6); }
   .display { font-size: 36px; line-height: 40px; }
   .protagonista { flex-direction: column; align-items: stretch; gap: var(--space-5); padding: var(--space-6); }
+  .azioni-hero > * { flex: 1 1 auto; }
   .manopola { width: 220px; height: 220px; align-self: center; }
   .titolo-pannello { font-size: 32px; line-height: 34px; }
-  .riquadri-home, .tessere { grid-template-columns: 1fr; }
+  .pagina, .tessere { grid-template-columns: 1fr; }
+  .pagina { gap: var(--space-4); }
+  .striscia-dati { margin-top: calc(-1 * var(--space-4)); }
   .tessera { min-height: 0; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--space-4); }
   .barra-avviso { flex-direction: column; align-items: stretch; }
   .voci, .riquadri { grid-template-columns: 1fr; }
@@ -382,7 +420,7 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
 <script>
 (function () {
   'use strict';
-  var VERSIONE = '0.5.1';
+  var VERSIONE = '0.6.0';
   var $ = function (id) { return document.getElementById(id); };
 
   /* ================= Albero delle schermate (Documento, sezione 3) ================= */
@@ -440,10 +478,81 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
     return g + ' ' + String(oggi.getDate()).padStart(2, '0') + ' · ' + m;
   }
 
+  /* ================= Categorie e info della Home (M1) ================= */
+  // Ordine fisso delle categorie. Si attivano una alla volta (D17): Pulizie in M6, Stiratura in M7, Dispensa in M8.
+  var CATEGORIE = [
+    { id: 'lavatrice', attiva: true },
+    { id: 'pulizie',   attiva: false },
+    { id: 'stiratura', attiva: false },
+    { id: 'dispensa',  attiva: false }
+  ];
+  // Le info che si sfogliano nei due riquadri, in ordine fisso. "arriva" = macro obiettivo in cui diventano vere.
+  var INFO = {
+    lavatrice: [
+      { id: 'contatore',    nome: 'Contatore report' },
+      { id: 'manutenzione', nome: 'Manutenzione',         titolo: 'Lavaggio a vuoto e filtro',     arriva: 'M5' },
+      { id: 'ultimo',       nome: 'Ultimo lavaggio',      titolo: 'Cosa hai lavato e come',        arriva: 'M3' },
+      { id: 'esiti',        nome: 'Esiti medi',           titolo: 'Come vanno i lavaggi',          arriva: 'M4' },
+      { id: 'rivedere',     nome: 'Standard da rivedere', titolo: 'Lavaggi con media sotto 3,5',   arriva: 'M4' },
+      { id: 'periodo',      nome: 'Lavaggi del periodo',  titolo: 'Quanti lavaggi in settimana',   arriva: 'M4' },
+      { id: 'database',     nome: 'Database standard',    titolo: 'Versione delle ricette in uso', arriva: 'M2' }
+    ]
+  };
+  var COPPIA_INIZIALE = { lavatrice: ['contatore', 'manutenzione'] };
+  stato.home = { coppia: { lavatrice: COPPIA_INIZIALE.lavatrice.slice() }, ultima: 'lavatrice', ultimaSalvata: null, pagina: { info: 0, categorie: 0 } };
+
+  function categoriaInEvidenza() {
+    var c = CATEGORIE.filter(function (x) { return x.id === stato.home.ultima && x.attiva; })[0];
+    return c ? c.id : 'lavatrice';
+  }
+  function categoriaDi(id) {
+    var p = percorso(id)[1];
+    return CATEGORIE.some(function (c) { return c.id === p && c.attiva; }) ? p : null;
+  }
+  function pagineInfo(cat) {
+    var tutte = INFO[cat] || [], coppia = stato.home.coppia[cat] || [];
+    var ordine = coppia.concat(tutte.map(function (i) { return i.id; }).filter(function (id) { return coppia.indexOf(id) < 0; }));
+    var pagine = [];
+    for (var i = 0; i < ordine.length; i += 2) pagine.push(ordine.slice(i, i + 2));
+    return pagine;
+  }
+  function voceInfo(cat, id) { return (INFO[cat] || []).filter(function (i) { return i.id === id; })[0]; }
+
+  function riquadroInfo(cat, id, intera) {
+    var v = voceInfo(cat, id), classe = intera ? ' intera' : '';
+    if (id === 'contatore') {
+      var n = stato.archivio.report % 15;
+      return '<div class="riquadro contatore' + classe + '">' + anello(n, 15) +
+        '<span class="testi"><span class="numero">' + String(n).padStart(2, '0') + '<small> / 15</small></span><span class="frase">report verso l’analisi</span></span></div>';
+    }
+    return '<div class="riquadro spento' + classe + '"><p class="etichetta">' + v.nome + '</p><p class="titolo-riquadro">' + v.titolo + '</p>' +
+      '<p class="frase-spenta">Arriva in ' + v.arriva + '</p></div>';
+  }
+
+  // Zona che si sfoglia col dito (o toccando i pallini). Le pagine fuori vista sono "inert": non si toccano né si leggono.
+  function sfoglia(nome, etichetta, pagine, indice) {
+    var html = '<div class="sfoglia" data-sfoglia="' + nome + '" data-pagine="' + pagine.length + '" role="region" aria-roledescription="carosello" aria-label="' + etichetta + '">' +
+      '<div class="binario" style="transform: ' + spostamento(indice, 0) + '">' +
+      pagine.map(function (p, i) { return '<div class="pagina"' + (i === indice ? '' : ' aria-hidden="true" inert') + '>' + p + '</div>'; }).join('') +
+      '</div></div>';
+    if (pagine.length > 1) {
+      html += '<div class="pallini" data-pallini="' + nome + '">' + pagine.map(function (p, i) {
+        return '<button class="pallino" type="button" data-pallino="' + nome + '" data-indice="' + i + '" aria-label="' + etichetta + ', pagina ' + (i + 1) + ' di ' + pagine.length + '" aria-current="' + (i === indice) + '"></button>';
+      }).join('') + '</div>';
+    }
+    return html;
+  }
+  function spostamento(indice, px) { return 'translateX(calc(' + (-indice * 100) + '% - ' + (indice * 20) + 'px + ' + Math.round(px) + 'px))'; }
+
+  function saluto() {
+    var h = new Date().getHours();
+    return h >= 5 && h < 12 ? 'Buongiorno' : h >= 12 && h < 18 ? 'Buon pomeriggio' : 'Buonasera';
+  }
+
   function tessera(id, icona) {
     var s = SCHERMATE[id];
-    return '<a class="tessera" href="#' + id + '">' + ICONE[icona] +
-      '<span class="testi"><span class="nome">' + s.titolo + '</span><span class="etichetta">Presto · ' + s.arriva + '</span></span></a>';
+    return '<button class="tessera" type="button" disabled data-categoria="' + id + '">' + ICONE[icona] +
+      '<span class="testi"><span class="nome">' + s.titolo + '</span><span class="etichetta">Presto</span></span></button>';
   }
 
   function anello(fatti, totale) {
@@ -455,30 +564,40 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
   }
 
   function disegnaHome() {
+    var cat = categoriaInEvidenza(), a = stato.archivio;
+    var striscia = '<a class="striscia-dati" href="#dati">' +
+      (a.ultimoBackup ? '<span class="bollino ok">Fatto</span>' : '<span class="bollino attenzione">Mai fatto</span>') +
+      '<span class="testo">Salvati sul tablet<span class="frase"> · ' + (a.ultimoBackup ? 'ultimo backup ' + quando(a.ultimoBackup) : 'nessun backup ancora') + '</span></span>' +
+      ICONE.avanti + '</a>';
+    var pagine = pagineInfo(cat).map(function (coppia) {
+      return coppia.map(function (id) { return riquadroInfo(cat, id, coppia.length === 1); }).join('');
+    });
+    var oggi = '<section class="oggi spento" aria-labelledby="titolo-oggi"><p class="etichetta">Oggi</p>' +
+      '<h2 class="titolo-riquadro" id="titolo-oggi">Cosa c’è da fare oggi</h2>' +
+      '<p class="frase-spenta">Arriva in M5: le attività di tutte le categorie, da segnare fatte con un tocco.</p></section>';
+    var protagonista = '<div class="pannello-hero protagonista" data-vai="' + cat + '">' + $('modello-manopola').innerHTML +
+      '<div class="protagonista-testi"><span class="etichetta"><span class="led" aria-hidden="true"></span>Nessun lavaggio</span>' +
+        '<h2 class="titolo-pannello">Lavatrice</h2>' +
+        '<p class="frase-hero">Ancora nessun lavaggio registrato.</p>' +
+        '<div class="azioni-hero"><a class="pulsante-principale" href="#' + cat + '">Apri la lavatrice</a>' +
+        '<button class="pulsante-secondario" type="button" disabled title="Arriva in M4">Nuovo lavaggio</button></div>' +
+      '</div></div>';
     var barra = (stato.richiestaInstallazione && !stato.installata)
-      ? '<div class="barra-avviso"><span class="testi"><strong>Installa Tutor Casa sul tablet</strong><span>Così si apre anche senza connessione</span></span>' +
+      ? '<div class="barra-avviso"><span class="testi"><strong>Installa Tutor Casa</strong><span>Così si apre anche senza connessione</span></span>' +
         '<button class="pulsante-principale" type="button" data-azione="installa">Installa</button></div>'
-      : '<div class="barra-avviso"><span class="testi"><strong>Controlla il funzionamento senza connessione</strong><span>Lo trovi in Dati e impostazioni</span></span>' +
-        '<a class="pulsante-principale" href="#dati">Controlla</a></div>';
+      : '<div class="barra-avviso spento"><span class="testi"><strong>Avvisi</strong><span>Arrivano in M4: report in sospeso, backup e manutenzione</span></span></div>';
+    var altre = CATEGORIE.filter(function (c) { return c.id !== cat; }).map(function (c) { return tessera(c.id, c.id); }).join('');
     return '<div class="home">' +
       '<div class="colonna-sinistra">' +
         '<header class="testata"><div class="testata-testi"><p class="etichetta">' + dataPannello() + '</p>' +
-          '<h1 class="display" tabindex="-1">Tutor Casa</h1></div>' +
+          '<h1 class="display" tabindex="-1">' + saluto() + '</h1></div>' +
           '<a class="pulsante-servizio" href="#dati" aria-label="Dati e impostazioni">' + ICONE.impostazioni + '</a></header>' +
-        '<div class="riquadri-home">' +
-          '<div class="riquadro contatore">' + anello(stato.archivio.report % 15, 15) +
-            '<span class="testi"><span class="numero">' + String(stato.archivio.report % 15).padStart(2, '0') + '<small> / 15</small></span><span class="frase">report verso l’analisi</span></span></div>' +
-          '<div class="riquadro"><p class="etichetta">Dati</p><p class="titolo-riquadro">Salvati sul tablet</p>' +
-            (stato.archivio.ultimoBackup ? segnala('ok', 'Fatto', 'Ultimo backup ' + quando(stato.archivio.ultimoBackup)) : segnala('attenzione', 'Mai fatto', 'Nessun backup ancora')) + '</div>' +
-        '</div>' +
+        striscia +
+        '<div class="info">' + sfoglia('info', 'Info della ' + SCHERMATE[cat].titolo.toLowerCase(), pagine, Math.min(stato.home.pagina.info, pagine.length - 1)) + '</div>' +
       '</div>' +
-      '<a class="pannello-hero protagonista" href="#lavatrice">' + $('modello-manopola').innerHTML +
-        '<span class="protagonista-testi"><span class="etichetta"><span class="led" aria-hidden="true"></span>Nessun lavaggio</span>' +
-        '<span class="titolo-pannello">Lavatrice</span>' +
-        '<span class="frase-hero">Le schermate sono ancora vuote: per ora serve a provare la navigazione.</span>' +
-        '<span class="pulsante-principale">Apri la lavatrice</span></span></a>' +
+      '<div class="colonna-destra">' + oggi + protagonista + '</div>' +
       '<section class="faccende" aria-labelledby="titolo-faccende"><h2 class="titolo-sezione" id="titolo-faccende">Altre faccende</h2>' +
-        '<div class="tessere">' + tessera('pulizie', 'pulizie') + tessera('stiratura', 'stiratura') + tessera('dispensa', 'dispensa') + '</div></section>' +
+        '<div class="tessere">' + altre + '</div></section>' +
       barra +
     '</div>';
   }
@@ -514,7 +633,7 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
         '<div class="riquadro"><p class="etichetta">Tema</p><p class="titolo-riquadro">' + NOMI_TEMA[temaAttuale()] + '</p>' +
           '<button class="pulsante-principale" type="button" data-azione="tema">Cambia tema</button></div>' +
       '</div>' +
-      pannelloArchivio() + pannelloBackup() +
+      pannelloHome() + pannelloArchivio() + pannelloBackup() +
       '<nav class="voci" aria-label="Strumenti di prova"><a class="voce" href="#vetrina"><span class="testi"><span class="codice">M0</span>' +
         '<span class="nome">Vetrina componenti</span><span class="descrizione">Pulsanti, chip, tag, voti e allerta da provare.</span></span>' + ICONE.avanti + '</a></nav>' +
       '<p class="etichetta piede">Versione ' + VERSIONE + '</p>' +
@@ -594,9 +713,11 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
   window.TutorCasa = { archivio: archivio }; // utile per i controlli
   stato.archivio = { pronto: false, errore: null, protetto: null, usatoKB: null, prove: [], report: 0 };
   function aggiornaArchivio() {
-    return Promise.all([archivio.tutti('prove'), archivio.conta('report'), archivio.leggi('impostazioni', 'ultimo_backup')]).then(function (r) {
+    return Promise.all([archivio.tutti('prove'), archivio.conta('report'), archivio.tutti('impostazioni')]).then(function (r) {
       stato.archivio.pronto = true; stato.archivio.errore = null;
-      stato.archivio.ultimoBackup = r[2] ? r[2].valore : null;
+      var imp = {}; r[2].forEach(function (x) { imp[x.chiave] = x.valore; });
+      stato.archivio.ultimoBackup = imp.ultimo_backup || null;
+      leggiImpostazioniHome(imp);
       stato.archivio.prove = r[0].sort(function (a, b) { return b.id - a.id; });
       stato.archivio.report = r[1];
     }).catch(function (e) {
@@ -913,6 +1034,42 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
   }
 
 
+  /* ================= Impostazioni della Home (M1) ================= */
+  // Salvate nel cassetto "impostazioni": viaggiano nel backup dentro impostazioni.csv.
+  function leggiImpostazioniHome(imp) {
+    var c = (imp.home_coppia_lavatrice || '').split(' | ');
+    var valide = c.length === 2 && c[0] !== c[1] && voceInfo('lavatrice', c[0]) && voceInfo('lavatrice', c[1]);
+    stato.home.coppia.lavatrice = valide ? c : COPPIA_INIZIALE.lavatrice.slice();
+    stato.home.ultimaSalvata = imp.home_ultima_categoria || null;
+    if (CATEGORIE.some(function (x) { return x.id === imp.home_ultima_categoria && x.attiva; })) stato.home.ultima = imp.home_ultima_categoria;
+  }
+  function scegliCoppia(posto, valore) {
+    var c = stato.home.coppia.lavatrice.slice(), altro = 1 - posto;
+    if (c[altro] === valore) c[altro] = c[posto]; // se è già nell'altro riquadro, i due si scambiano
+    c[posto] = valore;
+    stato.home.coppia.lavatrice = c; stato.home.pagina.info = 0;
+    return archivio.salva('impostazioni', { chiave: 'home_coppia_lavatrice', valore: c.join(' | ') });
+  }
+  function ricordaCategoria(id) {
+    var cat = categoriaDi(id);
+    if (!cat || cat === stato.home.ultimaSalvata) return;
+    stato.home.ultima = cat; stato.home.ultimaSalvata = cat;
+    archivio.salva('impostazioni', { chiave: 'home_ultima_categoria', valore: cat }).catch(function () {});
+  }
+  function pannelloHome() {
+    var c = stato.home.coppia.lavatrice;
+    function gruppo(posto, titolo) {
+      return '<div class="gruppo"><span class="gruppo-titolo" id="titolo-coppia-' + posto + '">' + titolo + '</span>' +
+        '<div class="fila" role="radiogroup" aria-labelledby="titolo-coppia-' + posto + '">' +
+        INFO.lavatrice.map(function (v) {
+          return '<button class="chip" type="button" role="radio" aria-checked="' + (c[posto] === v.id) + '" data-coppia="' + posto + '" data-valore="' + v.id + '">' + v.nome + '</button>';
+        }).join('') + '</div></div>';
+    }
+    return '<section class="pannello"><h2>Home · info della Lavatrice</h2>' +
+      '<p class="spiega">Scegli le due info che vedi appena apri l’app. Le altre seguono in ordine: scorri i riquadri col dito o tocca i pallini.</p>' +
+      gruppo(0, 'Primo riquadro') + gruppo(1, 'Secondo riquadro') + '</section>';
+  }
+
   function pannelloArchivio() {
     var a = stato.archivio;
     if (a.errore) {
@@ -991,6 +1148,7 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
   var attuale = idDaIndirizzo();
   function disegna(id, direzione) {
     var schermo = $('schermo');
+    if (id === 'home' && direzione) stato.home.pagina.info = 0;
     schermo.innerHTML = id === 'home' ? disegnaHome() : id === 'dati' ? disegnaDati() : id === 'vetrina' ? disegnaVetrina() : disegnaInterna(id);
     schermo.className = 'schermo ' + direzione;
     document.title = id === 'home' ? 'Tutor Casa' : SCHERMATE[id].titolo + ' · Tutor Casa';
@@ -1008,13 +1166,79 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
     history.replaceState(null, '', '#home');
   }
   disegna(attuale, 'apertura');
-  chiediProtezione().then(aggiornaArchivio);
+  chiediProtezione().then(aggiornaArchivio).then(function () { ricordaCategoria(attuale); });
+
+  /* ================= Sfoglia: scorrimento col dito e pallini ================= */
+  var tocco = null, bloccaClick = false;
+  function vaiAPagina(nome, indice) {
+    var s = document.querySelector('[data-sfoglia="' + nome + '"]'); if (!s) return;
+    var n = Number(s.dataset.pagine); indice = Math.max(0, Math.min(n - 1, indice));
+    stato.home.pagina[nome] = indice;
+    s.querySelector('.binario').style.transform = spostamento(indice, 0);
+    Array.prototype.forEach.call(s.querySelectorAll('.pagina'), function (p, i) {
+      if (i === indice) { p.removeAttribute('aria-hidden'); p.removeAttribute('inert'); }
+      else { p.setAttribute('aria-hidden', 'true'); p.setAttribute('inert', ''); }
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-pallino="' + nome + '"]'), function (b, i) { b.setAttribute('aria-current', String(i === indice)); });
+  }
+  document.addEventListener('pointerdown', function (e) {
+    var s = e.target.closest('[data-sfoglia]');
+    if (!s || Number(s.dataset.pagine) < 2 || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    // Il bordo dello schermo resta al sistema: su Android lì parte il gesto "indietro".
+    if (e.clientX < 24 || e.clientX > window.innerWidth - 24) return;
+    tocco = { s: s, nome: s.dataset.sfoglia, id: e.pointerId, x: e.clientX, y: e.clientY, attivo: false, t: Date.now() };
+  });
+  document.addEventListener('pointermove', function (e) {
+    if (!tocco || e.pointerId !== tocco.id) return;
+    var dx = e.clientX - tocco.x, dy = e.clientY - tocco.y;
+    if (!tocco.attivo) {
+      if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { tocco = null; return; } // sta scorrendo la pagina in giù
+      if (Math.abs(dx) < 10) return;
+      tocco.attivo = true;
+      tocco.s.querySelector('.binario').classList.add('trascina');
+      try { tocco.s.setPointerCapture(e.pointerId); } catch (x) {}
+    }
+    var i = stato.home.pagina[tocco.nome], n = Number(tocco.s.dataset.pagine);
+    if ((i === 0 && dx > 0) || (i === n - 1 && dx < 0)) dx = dx / 3; // resistenza alle estremità
+    tocco.s.querySelector('.binario').style.transform = spostamento(i, dx);
+  });
+  function fineTocco(e) {
+    if (!tocco || e.pointerId !== tocco.id) return;
+    var t = tocco; tocco = null;
+    if (!t.attivo) return;
+    t.s.querySelector('.binario').classList.remove('trascina');
+    var dx = e.clientX - t.x, veloce = Math.abs(dx) / Math.max(1, Date.now() - t.t) > 0.4;
+    var passo = (Math.abs(dx) > t.s.clientWidth * 0.2 || (veloce && Math.abs(dx) > 30)) && e.type === 'pointerup' ? (dx < 0 ? 1 : -1) : 0;
+    vaiAPagina(t.nome, stato.home.pagina[t.nome] + passo);
+    bloccaClick = true; setTimeout(function () { bloccaClick = false; }, 350);
+  }
+  document.addEventListener('pointerup', fineTocco);
+  document.addEventListener('pointercancel', fineTocco);
+  // Dopo uno scorrimento il dito si alza su un pannello: quel "tocco" non deve aprire nulla.
+  document.addEventListener('click', function (e) { if (bloccaClick) { bloccaClick = false; e.preventDefault(); e.stopPropagation(); } }, true);
+  document.addEventListener('click', function (e) {
+    var p = e.target.closest('[data-pallino]');
+    if (p) { vaiAPagina(p.dataset.pallino, Number(p.dataset.indice)); return; }
+    var c = e.target.closest('[data-coppia]');
+    if (c) {
+      var y = window.scrollY;
+      scegliCoppia(Number(c.dataset.coppia), c.dataset.valore).then(function () {
+        ridisegna(); window.scrollTo(0, y);
+        var b = document.querySelector('[data-coppia="' + c.dataset.coppia + '"][data-valore="' + c.dataset.valore + '"]'); if (b) b.focus({ preventScroll: true });
+      });
+      return;
+    }
+    // Un tocco sul pannello protagonista apre la sua categoria (i pulsanti spenti non fanno nulla).
+    var v = e.target.closest('[data-vai]');
+    if (v && !e.target.closest('a, button')) location.hash = '#' + v.dataset.vai;
+  });
 
   window.addEventListener('hashchange', function () {
     var nuovo = idDaIndirizzo();
     if (nuovo === attuale) return;
     var direzione = profondita(nuovo) < profondita(attuale) ? 'indietro' : 'avanti';
     attuale = nuovo;
+    ricordaCategoria(nuovo);
     disegna(nuovo, direzione);
   });
 
