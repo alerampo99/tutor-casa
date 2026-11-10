@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tutor Casa</title>
+<meta name="theme-color" content="#2B2C2F">
+<meta name="description" content="Le faccende di casa, una alla volta.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preload" href="fonts/manrope.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/space-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+  try { var t = localStorage.getItem('tc-tema'); if (t === 'scuro' || t === 'chiaro') document.documentElement.dataset.tema = t; } catch (e) {}
+</script>
+<style>
+
+/* ---------- Caratteri inclusi nell'app (funzionano senza connessione) ---------- */
+@font-face { font-family: "Manrope"; src: url("fonts/manrope.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: "Space Grotesk"; src: url("fonts/space-grotesk.woff2") format("woff2"); font-weight: 300 700; font-display: swap; }
+
+/* ---------- Token del Design System Tutor Casa (D18) ---------- */
+:root {
+  color-scheme: dark;
+  /* Base comune · tema scuro (principale) */
+  --ground: #2B2C2F;
+  --ground-ink: #ECEDEE;
+  --ground-muted: #B4B9BE;
+  --panel: #D3DBE2;
+  --panel-hero: #E4EAEF;
+  --panel-inset: #C7D0D8;
+  --ink: #1B2228;
+  --ink-muted: #4D5A65;
+  --line: rgba(255,255,255,0.10);
+  --tile-off: rgba(211,219,226,0.08);
+  --tile-off-ink: #C3C9CF;
+  --topic: #D4FF3A;
+  --topic-ink: #12160A;
+  --stato-ok: #34C77B;
+  --stato-info: #4FA8E0;
+  --stato-attenzione: #FACC15;
+  --stato-da-fare: #F59E0B;
+  --stato-allerta: #DC2626;
+  --stato-ink: #1B2228;
+  --stato-allerta-ink: #FFFFFF;
+  --shadow-rilievo: 14px 14px 32px rgba(0,0,0,0.45), -8px -8px 22px rgba(255,255,255,0.06), inset 1px 1px 0 rgba(255,255,255,0.7);
+  --shadow-scavato: inset 5px 5px 12px rgba(84,100,116,0.45), inset -5px -5px 12px rgba(255,255,255,0.75);
+  --shadow-topic: 0 8px 18px -6px rgba(90,110,20,0.55);
+  --bagliore-forza: 1;
+
+  /* Tema di categoria · Lavatrice */
+  --tema-1: #0F6A72;   /* lav-petrolio */
+  --tema-2: #2FB6A3;   /* lav-acquamarina */
+  --tema-3: #4FA8E0;   /* lav-azzurro */
+  --tema-oblo: #16323B;
+  --tema-icona: #7CC8D8;
+
+  /* Tipografia, spazi, raggi */
+  --font-sans: "Manrope", system-ui, sans-serif;
+  --font-tecnico: "Space Grotesk", "Manrope", system-ui, sans-serif;
+  --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px; --space-6: 24px;
+  --space-7: 28px; --space-8: 32px; --space-12: 48px;
+  --radius-sm: 16px; --radius-md: 24px; --radius-lg: 26px; --radius-xl: 36px; --radius-pill: 999px;
+  --margine: var(--space-12);
+}
+/* Tema chiaro: scelto a mano, oppure automatico se il tablet è in modalità chiara */
+:root[data-tema="chiaro"] {
+  color-scheme: light;
+  --ground: #DDE3E8; --ground-ink: #1B2228; --ground-muted: #4D5A65;
+  --panel: #F2F5F7; --panel-hero: #FFFFFF; --panel-inset: #E2E8ED;
+  --line: rgba(27,34,40,0.12); --tile-off: rgba(27,34,40,0.05); --tile-off-ink: #4D5A65;
+  --shadow-rilievo: 10px 10px 24px rgba(84,100,116,0.28), -8px -8px 20px rgba(255,255,255,0.9);
+  --tema-icona: #0F6A72; --bagliore-forza: 0.55;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-tema="scuro"]) {
+    color-scheme: light;
+    --ground: #DDE3E8; --ground-ink: #1B2228; --ground-muted: #4D5A65;
+    --panel: #F2F5F7; --panel-hero: #FFFFFF; --panel-inset: #E2E8ED;
+    --line: rgba(27,34,40,0.12); --tile-off: rgba(27,34,40,0.05); --tile-off-ink: #4D5A65;
+    --shadow-rilievo: 10px 10px 24px rgba(84,100,116,0.28), -8px -8px 20px rgba(255,255,255,0.9);
+    --tema-icona: #0F6A72; --bagliore-forza: 0.55;
+  }
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body {
+  margin: 0; min-height: 100%;
+  background: var(--ground); color: var(--ground-ink);
+  font-family: var(--font-sans); font-size: 17px; line-height: 24px; font-weight: 500;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+  transition: background-color 600ms ease;
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--topic); outline-offset: 3px; }
+
+/* ---------- Sfondo: bagliori del tema di categoria ---------- */
+.sfondo { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.bagliore { position: absolute; border-radius: 50%; filter: blur(100px); transition: background-color 600ms ease, opacity 600ms ease; }
+.bagliore.b1 { width: 70vmax; height: 70vmax; left: -22vmax; top: -18vmax; background: var(--tema-1); opacity: calc(0.6 * var(--bagliore-forza)); animation: deriva 18s ease-in-out infinite; }
+.bagliore.b2 { width: 62vmax; height: 62vmax; right: -26vmax; top: 30vh; background: var(--tema-3); opacity: calc(0.38 * var(--bagliore-forza)); animation: deriva 22s ease-in-out infinite reverse; }
+.bagliore.b3 { width: 52vmax; height: 52vmax; left: 15vw; bottom: -22vmax; background: var(--tema-2); opacity: calc(0.4 * var(--bagliore-forza)); animation: deriva 26s ease-in-out infinite; }
+@keyframes deriva { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(30px, 24px); } }
+
+/* ---------- Stili di testo ---------- */
+.display { margin: 0; font-size: 44px; line-height: 48px; font-weight: 800; letter-spacing: -1px; }
+.titolo-pannello { margin: 0; font-size: 40px; line-height: 40px; font-weight: 800; letter-spacing: -1px; }
+.titolo-riquadro { margin: 0; font-size: 22px; line-height: 28px; font-weight: 800; }
+.corpo-piccolo { font-size: 15px; line-height: 21px; }
+.etichetta { margin: 0; font-family: var(--font-tecnico); font-size: 13px; line-height: 16px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; }
+
+/* ---------- Superfici ---------- */
+.pannello-hero { background: var(--panel-hero); color: var(--ink); box-shadow: var(--shadow-rilievo); border-radius: var(--radius-xl); padding: var(--space-8); }
+.riquadro { background: var(--panel-inset); color: var(--ink); box-shadow: var(--shadow-scavato); border-radius: var(--radius-lg); padding: 22px var(--space-6); }
+
+/* ---------- Pulsanti ---------- */
+.pulsante-principale {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: 52px; padding: 14px 24px; border: 0; border-radius: var(--radius-sm);
+  background: var(--topic); color: var(--topic-ink); box-shadow: var(--shadow-topic);
+  font-size: 16px; font-weight: 800; cursor: pointer;
+}
+.pulsante-servizio {
+  width: 60px; height: 60px; flex: none; border: 0; border-radius: 20px;
+  background: var(--panel); color: var(--ink); box-shadow: var(--shadow-rilievo);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  text-decoration: none; transition: box-shadow 120ms ease;
+}
+.pulsante-servizio:active { box-shadow: var(--shadow-scavato); }
+
+/* ---------- Segnalazioni (bollini) ---------- */
+.bollino { display: inline-block; padding: 5px 12px; border-radius: var(--radius-pill); font-size: 13px; line-height: 16px; font-weight: 800; color: var(--stato-ink); white-space: nowrap; }
+.bollino.ok { background: var(--stato-ok); }
+.bollino.info { background: var(--stato-info); }
+.bollino.attenzione { background: var(--stato-attenzione); }
+.bollino.da-fare { background: var(--stato-da-fare); }
+.bollino.allerta { background: var(--stato-allerta); color: var(--stato-allerta-ink); }
+.segnalazione { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.segnalazione .frase { font-size: 15px; line-height: 21px; font-weight: 600; color: var(--ink-muted); }
+
+/* ---------- Manopola ---------- */
+.manopola { width: 300px; height: 300px; flex: none; }
+.manopola .tacca { stroke: #9AA7B2; stroke-width: 2; stroke-linecap: round; }
+.manopola .quadrante { font-family: var(--font-tecnico); font-size: 16px; font-weight: 600; fill: var(--ink-muted); text-anchor: middle; dominant-baseline: central; }
+.onda-1 { animation: onda 4s linear infinite; }
+.onda-2 { animation: onda-inversa 6s linear infinite; }
+@keyframes onda { from { transform: translateX(0); } to { transform: translateX(-60px); } }
+@keyframes onda-inversa { from { transform: translateX(-60px); } to { transform: translateX(0); } }
+.led { width: 10px; height: 10px; flex: none; border-radius: 50%; background: var(--topic); animation: respiro 2.4s ease-in-out infinite; }
+@keyframes respiro { 0%, 100% { box-shadow: 0 0 0 4px rgba(27,34,40,0.12), 0 0 10px rgba(160,200,20,0.55); } 50% { box-shadow: 0 0 0 7px rgba(27,34,40,0.06), 0 0 18px rgba(160,200,20,0.8); } }
+
+
+.riquadro { display: flex; flex-direction: column; justify-content: center; gap: var(--space-2); }
+.riquadro .etichetta { color: var(--ink-muted); }
+[hidden] { display: none !important; }
+
+/* ---------- Schermo e transizioni ---------- */
+.schermo { position: relative; z-index: 1; min-height: 100%; max-width: 1280px; margin: 0 auto; padding: 56px var(--margine) var(--space-12); }
+.schermo.avanti { animation: da-destra 380ms cubic-bezier(.2,.7,.2,1) both; }
+.schermo.indietro { animation: da-sinistra 380ms cubic-bezier(.2,.7,.2,1) both; }
+.schermo.apertura { animation: entrata 420ms ease-out both; }
+@keyframes da-destra { from { opacity: 0; transform: translateX(48px); } to { opacity: 1; transform: none; } }
+@keyframes da-sinistra { from { opacity: 0; transform: translateX(-48px); } to { opacity: 1; transform: none; } }
+@keyframes entrata { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+h1:focus { outline: none; }
+
+/* ---------- Home (tavole D · Mix) ---------- */
+.schermo { display: flex; flex-direction: column; min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+.home {
+  flex: 1; display: grid; gap: var(--space-7);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "testata" "protagonista" "riquadri" "faccende" "avviso";
+  grid-template-rows: auto auto auto auto 1fr;
+}
+.colonna-sinistra { display: contents; }
+.testata { grid-area: testata; display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); }
+.testata .etichetta { color: var(--ground-muted); font-size: 15px; }
+.testata-testi { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.protagonista { grid-area: protagonista; display: flex; align-items: center; gap: 36px; text-decoration: none; }
+.protagonista-testi { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.protagonista-testi .etichetta { color: var(--ink-muted); font-size: 14px; display: flex; align-items: center; gap: 10px; }
+.frase-hero { color: #3F4B55; line-height: 1.4; }
+.protagonista .pulsante-principale { align-self: flex-start; margin-top: 6px; }
+.riquadri-home { grid-area: riquadri; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+.riquadri-home .riquadro { min-height: 120px; }
+.riquadro.contatore { flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--space-5); }
+.contatore .testi { display: flex; flex-direction: column; gap: 4px; }
+.numero { font-family: var(--font-tecnico); font-size: 36px; line-height: 36px; font-weight: 700; }
+.numero small { font-size: 18px; color: var(--ink-muted); }
+.contatore .frase { font-size: 15px; color: var(--ink-muted); }
+.faccende { grid-area: faccende; display: flex; flex-direction: column; gap: 14px; }
+.titolo-sezione { margin: 0; font-size: 20px; line-height: 26px; font-weight: 800; }
+.tessere { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.tessera {
+  min-height: 124px; border-radius: var(--radius-md); border: 1px solid var(--line);
+  background: var(--tile-off); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  padding: 18px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: var(--space-2);
+  color: var(--tile-off-ink); text-decoration: none;
+}
+.tessera svg { flex: none; stroke: var(--tema-icona); }
+.tessera .testi { display: flex; flex-direction: column; gap: 4px; }
+.tessera .nome { font-size: 17px; font-weight: 700; }
+.tessera .etichetta { font-size: 12px; color: var(--ground-muted); }
+.barra-avviso { grid-area: avviso; align-self: end; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: 18px 22px; border-radius: var(--radius-md); background: var(--panel); color: var(--ink); box-shadow: var(--shadow-rilievo); }
+.barra-avviso .testi { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.barra-avviso strong { font-size: 16px; font-weight: 700; }
+.barra-avviso span { font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+.barra-avviso .pulsante-principale { flex: none; text-decoration: none; }
+.solo-lettori { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.piede { color: var(--ground-muted); }
+
+/* ---------- Schermate interne ---------- */
+.interna { display: flex; flex-direction: column; gap: var(--space-7); }
+.intestazione { display: flex; align-items: center; gap: var(--space-5); }
+.intestazione-testi { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.intestazione .etichetta { color: var(--ground-muted); font-size: 14px; }
+.vuota { display: flex; flex-direction: column; gap: var(--space-3); max-width: 720px; }
+.vuota p { margin: 0; }
+.voci { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-5); }
+.voce {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+  min-height: 96px; padding: 20px 22px; border-radius: var(--radius-md);
+  background: var(--panel); color: var(--ink); box-shadow: var(--shadow-rilievo);
+  text-decoration: none; transition: box-shadow 120ms ease, transform 120ms ease;
+}
+.voce:active { box-shadow: var(--shadow-scavato); transform: scale(0.99); }
+.voce .testi { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.voce .codice { font-family: var(--font-tecnico); font-size: 13px; line-height: 16px; font-weight: 600; letter-spacing: 0.4px; color: var(--ink-muted); }
+.voce .nome { font-size: 20px; line-height: 26px; font-weight: 800; }
+.voce .descrizione { font-size: 15px; line-height: 21px; color: var(--ink-muted); }
+.voce svg { flex: none; stroke: var(--ink-muted); }
+.riquadri { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-5); }
+.riquadro .pulsante-principale { align-self: flex-start; margin-top: var(--space-2); }
+
+
+/* ---------- Componenti (M0 passo 4) ---------- */
+.pannello { background: var(--panel); color: var(--ink); box-shadow: var(--shadow-rilievo); border-radius: var(--radius-md); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.pannello > h2 { margin: 0; font-size: 22px; line-height: 28px; font-weight: 800; }
+.spiega { margin: 0; font-size: 15px; line-height: 21px; color: var(--ink-muted); }
+.vetrina { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap: var(--space-6); align-items: start; }
+.fila { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+.gruppo { display: flex; flex-direction: column; gap: var(--space-2); }
+.gruppo-titolo { font-size: 16px; font-weight: 700; }
+.pulsante-secondario {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 14px 24px;
+  border: 0; border-radius: var(--radius-sm); background: var(--panel-hero); color: var(--ink);
+  box-shadow: 4px 4px 10px rgba(84,100,116,0.35), -4px -4px 10px rgba(255,255,255,0.8);
+  font-size: 16px; font-weight: 800; cursor: pointer; transition: box-shadow 120ms ease;
+}
+.pulsante-secondario { position: relative; }
+label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outline-offset: 3px; }
+.pulsante-secondario:active, .pulsante-principale:active { box-shadow: var(--shadow-scavato); }
+/* Chip: una sola scelta */
+.chip {
+  min-height: 48px; padding: 0 18px; border: 0; border-radius: var(--radius-pill);
+  background: var(--panel-inset); color: var(--ink); font-size: 16px; font-weight: 700; cursor: pointer;
+  box-shadow: inset 3px 3px 6px rgba(84,100,116,0.40), inset -3px -3px 6px rgba(255,255,255,0.70);
+}
+.chip[aria-checked="true"] { background: var(--topic); color: var(--topic-ink); font-weight: 800; box-shadow: var(--shadow-topic); }
+/* Tag: più scelte insieme */
+.tag {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px 0 12px;
+  border: 1.5px solid rgba(27,34,40,0.28); border-radius: var(--radius-pill); background: transparent;
+  color: var(--ink); font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.tag svg { stroke: currentColor; flex: none; }
+.tag[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--panel-hero); }
+/* Voti 1–5 */
+.voto-testa { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
+.voto-parola { font-family: var(--font-tecnico); font-size: 13px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; color: var(--ink-muted); }
+.voti { display: flex; gap: var(--space-3); }
+.voto {
+  width: 56px; height: 56px; flex: none; border: 0; border-radius: 50%; cursor: pointer;
+  background: var(--panel-inset); color: var(--ink); font-family: var(--font-tecnico); font-size: 20px; font-weight: 700;
+  box-shadow: inset 3px 3px 6px rgba(84,100,116,0.40), inset -3px -3px 6px rgba(255,255,255,0.70);
+}
+.voto[aria-checked="true"] { background: var(--topic); color: var(--topic-ink); box-shadow: var(--shadow-topic); }
+/* Allerta del carico */
+.allerta-blocco { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 18px; background: var(--panel-inset); }
+.allerta-blocco .riga { display: flex; align-items: center; gap: 10px; }
+.allerta-blocco .codice { font-family: var(--font-tecnico); font-size: 13px; font-weight: 600; letter-spacing: 0.4px; color: var(--ink-muted); }
+.allerta-blocco p { margin: 0; font-size: 15px; line-height: 21px; }
+.allerta-blocco .nota { color: var(--ink-muted); font-weight: 600; }
+.elenco { display: flex; flex-direction: column; gap: var(--space-3); }
+@media (max-width: 640px) { .voti { gap: var(--space-2); } .voto { width: 52px; height: 52px; } }
+
+/* ---------- Layout: orizzontale (tablet ruotato) ---------- */
+@media (orientation: landscape) and (min-width: 900px) {
+  :root { --margine: 44px; }
+  .schermo { padding-top: 40px; padding-bottom: 40px; }
+  .home {
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1fr);
+    grid-template-areas: "sinistra protagonista" "faccende faccende" "avviso avviso";
+    grid-template-rows: auto auto auto;
+    align-content: space-between; column-gap: 40px; row-gap: 32px;
+  }
+  .colonna-sinistra { grid-area: sinistra; display: flex; flex-direction: column; gap: var(--space-7); min-width: 0; }
+  .riquadri-home { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .protagonista { justify-content: center; gap: var(--space-7); padding: var(--space-7) var(--space-8); }
+  .protagonista .manopola { width: 270px; height: 270px; }
+  .faccende .titolo-sezione { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .tessere { gap: var(--space-5); }
+  .tessera { min-height: 92px; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--space-4); }
+  .barra-avviso { align-self: auto; }
+}
+
+/* ---------- Schermi stretti (smartphone, di supporto) ---------- */
+@media (max-width: 640px) {
+  :root { --margine: 20px; }
+  .schermo { padding-top: 32px; }
+  .home, .interna { gap: var(--space-6); }
+  .display { font-size: 36px; line-height: 40px; }
+  .protagonista { flex-direction: column; align-items: stretch; gap: var(--space-5); padding: var(--space-6); }
+  .manopola { width: 220px; height: 220px; align-self: center; }
+  .titolo-pannello { font-size: 32px; line-height: 34px; }
+  .riquadri-home, .tessere { grid-template-columns: 1fr; }
+  .tessera { min-height: 0; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--space-4); }
+  .barra-avviso { flex-direction: column; align-items: stretch; }
+  .voci, .riquadri { grid-template-columns: 1fr; }
+}
+@media (min-width: 641px) and (max-width: 760px) and (orientation: portrait) {
+  .manopola { width: 240px; height: 240px; }
+}
+
+/* ---------- Riduci movimento ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="sfondo" aria-hidden="true">
+  <div class="bagliore b1"></div>
+  <div class="bagliore b2"></div>
+  <div class="bagliore b3"></div>
+</div>
+
+<main class="schermo" id="schermo"></main>
+
+<template id="modello-manopola">
+  <svg class="manopola" aria-hidden="true" viewBox="0 0 300 300">
+      <defs>
+        <filter id="ombra-pomello" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7"></feGaussianBlur></filter>
+        <clipPath id="vetro-oblo"><circle cx="150" cy="150" r="60"></circle></clipPath>
+        <radialGradient id="pomello" cx="38%" cy="32%" r="80%"><stop offset="0%" stop-color="#E9EEF2"></stop><stop offset="100%" stop-color="#B9C4CE"></stop></radialGradient>
+        <linearGradient id="acqua" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" style="stop-color: var(--tema-3)"></stop><stop offset="100%" style="stop-color: var(--tema-1)"></stop></linearGradient>
+      </defs>
+      <line x1="150.0" y1="50.0" x2="150.0" y2="43.0" class="tacca"/><text x="150.0" y="24.0" class="quadrante">1</text>
+      <line x1="188.3" y1="57.6" x2="190.9" y2="51.1" class="tacca"/><text x="198.2" y="33.6" class="quadrante">2</text>
+      <line x1="220.7" y1="79.3" x2="225.7" y2="74.3" class="tacca"/><text x="239.1" y="60.9" class="quadrante">3</text>
+      <line x1="242.4" y1="111.7" x2="248.9" y2="109.1" class="tacca"/><text x="266.4" y="101.8" class="quadrante">4</text>
+      <line x1="250.0" y1="150.0" x2="257.0" y2="150.0" class="tacca"/><text x="276.0" y="150.0" class="quadrante">5</text>
+      <line x1="242.4" y1="188.3" x2="248.9" y2="190.9" class="tacca"/><text x="266.4" y="198.2" class="quadrante">6</text>
+      <line x1="220.7" y1="220.7" x2="225.7" y2="225.7" class="tacca"/><text x="239.1" y="239.1" class="quadrante">7</text>
+      <line x1="188.3" y1="242.4" x2="190.9" y2="248.9" class="tacca"/><text x="198.2" y="266.4" class="quadrante">8</text>
+      <line x1="150.0" y1="250.0" x2="150.0" y2="257.0" class="tacca"/><text x="150.0" y="276.0" class="quadrante">9</text>
+      <line x1="111.7" y1="242.4" x2="109.1" y2="248.9" class="tacca"/><text x="101.8" y="266.4" class="quadrante">10</text>
+      <line x1="79.3" y1="220.7" x2="74.3" y2="225.7" class="tacca"/><text x="60.9" y="239.1" class="quadrante">11</text>
+      <line x1="57.6" y1="188.3" x2="51.1" y2="190.9" class="tacca"/><text x="33.6" y="198.2" class="quadrante">12</text>
+      <line x1="50.0" y1="150.0" x2="43.0" y2="150.0" class="tacca"/><text x="24.0" y="150.0" class="quadrante">13</text>
+      <line x1="57.6" y1="111.7" x2="51.1" y2="109.1" class="tacca"/><text x="33.6" y="101.8" class="quadrante">14</text>
+      <circle cx="152" cy="155" r="90" fill="#5E6E7C" opacity="0.5" filter="url(#ombra-pomello)"></circle>
+      <circle cx="150" cy="150" r="86" fill="url(#pomello)"></circle>
+      <circle cx="150" cy="150" r="64" fill="#1E3A44"></circle>
+      <g clip-path="url(#vetro-oblo)">
+        <rect x="90" y="90" width="120" height="120" style="fill: var(--tema-oblo)"></rect>
+        <g class="onda-1"><path d="M60 150 q15 -10 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 V240 H60 Z" fill="url(#acqua)" fill-opacity="0.85"></path></g>
+        <g class="onda-2"><path d="M60 162 q15 -8 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 V240 H60 Z" style="fill: var(--tema-2)" fill-opacity="0.6"></path></g>
+        <circle cx="128" cy="122" r="22" fill="#FFFFFF" fill-opacity="0.10"></circle>
+      </g>
+      <circle cx="150" cy="150" r="64" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="3"></circle>
+      <line x1="70" y1="150" x2="84" y2="150" stroke="#1B2228" stroke-width="7" stroke-linecap="round"></line>
+    </svg>
+</template>
+
+<script src="lib/jszip.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var VERSIONE = '0.5.0';
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ================= Albero delle schermate (Documento, sezione 3) ================= */
+  var SCHERMATE = {
+    home:               { titolo: 'Tutor Casa', genitore: null },
+    lavatrice:          { codice: 'L0',   titolo: 'Lavatrice',              genitore: 'home',             arriva: 'M3', testo: 'Stato della lavatrice e accesso a tutte le sue funzioni.',
+                          figli: ['lavaggi-standard', 'su-misura', 'report', 'registro', 'manutenzione', 'guida'] },
+    'lavaggi-standard': { codice: 'L1',   titolo: 'Lavaggi standard',       genitore: 'lavatrice',        arriva: 'M3', testo: 'Elenco dei lavaggi settimanali e occasionali.', figli: ['scheda-lavaggio'] },
+    'scheda-lavaggio':  { codice: 'L1.1', titolo: 'Scheda lavaggio',        genitore: 'lavaggi-standard', arriva: 'M3', testo: 'Manopole, vaschetta, checklist e pulsante Avvia.' },
+    'su-misura':        { codice: 'L2',   titolo: 'Lavaggio su misura',     genitore: 'lavatrice',        arriva: 'M3', testo: 'Componi un lavaggio scegliendo tessuti, colori, sporco e carico.' },
+    report:             { codice: 'L3',   titolo: 'Report post-lavaggio',   genitore: 'lavatrice',        arriva: 'M4', testo: 'Voti, anomalie e note a fine lavaggio.' },
+    registro:           { codice: 'L4',   titolo: 'Registro',               genitore: 'lavatrice',        arriva: 'M4', testo: 'Storico, export, import e statistiche dei lavaggi.',
+                          figli: ['storico', 'export', 'import-standard', 'statistiche'] },
+    storico:            { codice: 'L4.1', titolo: 'Storico',                genitore: 'registro',         arriva: 'M4', testo: 'Tutti i report, filtrabili per lavaggio.' },
+    export:             { codice: 'L4.2', titolo: 'Export',                 genitore: 'registro',         arriva: 'M4', testo: 'Esporta registro e lavaggi standard in CSV.' },
+    'import-standard':  { codice: 'L4.3', titolo: 'Import standard',        genitore: 'registro',         arriva: 'M4', testo: 'Carica un nuovo lavaggi_standard.csv e controlla le differenze.' },
+    statistiche:        { codice: 'L4.4', titolo: 'Statistiche',            genitore: 'registro',         arriva: 'M4', testo: 'Media degli esiti e durata per ogni lavaggio.' },
+    manutenzione:       { codice: 'L5',   titolo: 'Manutenzione macchina',  genitore: 'lavatrice',        arriva: 'M5', testo: 'Lavaggio a vuoto, filtro, vaschetta e guarnizione.' },
+    guida:              { codice: 'L6',   titolo: 'Guida rapida',           genitore: 'lavatrice',        arriva: 'M3', testo: 'Regole di chimica, macchie e preparazione dei capi.' },
+    pulizie:            { codice: 'C1',   titolo: 'Pulizie',                genitore: 'home',             arriva: 'M6', testo: 'Attività settimanali e occasionali, con checklist.' },
+    stiratura:          { codice: 'C2',   titolo: 'Stiratura',              genitore: 'home',             arriva: 'M7', testo: 'Attività settimanali e occasionali, con checklist.' },
+    dispensa:           { codice: 'C3',   titolo: 'Dispensa e frigo',       genitore: 'home',             arriva: 'M8', testo: 'Attività settimanali e occasionali, con checklist.' },
+    dati:               { codice: 'D1',   titolo: 'Dati e impostazioni',    genitore: 'home',             arriva: 'M0', testo: 'Import ed export di tutti i CSV, backup e tema.' },
+    vetrina:            { codice: 'M0',   titolo: 'Vetrina componenti',     genitore: 'dati',             arriva: 'M0', testo: 'Tutti i componenti dell’app, da provare. Pagina provvisoria.' }
+  };
+
+  function percorso(id) { var p = []; while (id) { p.unshift(id); id = SCHERMATE[id].genitore; } return p; }
+  function profondita(id) { return percorso(id).length - 1; }
+  function idDaIndirizzo() { var h = location.hash.replace('#', ''); return SCHERMATE[h] ? h : 'home'; }
+
+  /* ================= Icone ================= */
+  var ICONE = {
+    indietro: '<svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>',
+    avanti: '<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg>',
+    impostazioni: '<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10"></path><path d="M18 7h2"></path><circle cx="16" cy="7" r="2"></circle><path d="M4 17h4"></path><path d="M12 17h8"></path><circle cx="10" cy="17" r="2"></circle></svg>',
+    pulizie: '<svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l-6 10"></path><path d="M5 14h8l1 6H4z"></path></svg>',
+    stiratura: '<svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18l-2-6a5 5 0 0 0-5-3H8"></path><path d="M8 8v3"></path></svg>',
+    dispensa: '<svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="2"></rect><path d="M6 10h12"></path><path d="M9 6v2"></path><path d="M9 13v3"></path></svg>'
+  };
+
+  /* ================= Stati mostrati in Dati e impostazioni ================= */
+  var stato = {
+    offline: { titolo: 'Controllo in corso', bollino: 'Attendi', classe: 'attenzione', frase: 'Sto preparando la copia sul tablet' },
+    richiestaInstallazione: null,
+    installata: window.matchMedia('(display-mode: standalone)').matches
+  };
+  var NOMI_TEMA = { auto: 'Automatico', scuro: 'Scuro', chiaro: 'Chiaro' };
+  function temaAttuale() { return document.documentElement.dataset.tema || 'auto'; }
+
+  /* ================= Disegno delle schermate ================= */
+  function dataPannello() {
+    var oggi = new Date();
+    var g = oggi.toLocaleDateString('it-IT', { weekday: 'short' }).replace('.', '');
+    var m = oggi.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '');
+    return g + ' ' + String(oggi.getDate()).padStart(2, '0') + ' · ' + m;
+  }
+
+  function tessera(id, icona) {
+    var s = SCHERMATE[id];
+    return '<a class="tessera" href="#' + id + '">' + ICONE[icona] +
+      '<span class="testi"><span class="nome">' + s.titolo + '</span><span class="etichetta">Presto · ' + s.arriva + '</span></span></a>';
+  }
+
+  function anello(fatti, totale) {
+    var c = 2 * Math.PI * 30, pieno = c * fatti / totale;
+    return '<svg aria-hidden="true" width="76" height="76" viewBox="0 0 76 76" style="flex: none">' +
+      '<circle cx="38" cy="38" r="30" fill="none" stroke="#2B2C2F" stroke-width="10"></circle>' +
+      (fatti > 0 ? '<circle cx="38" cy="38" r="30" fill="none" stroke="var(--topic)" stroke-width="10" stroke-linecap="round" stroke-dasharray="' + pieno.toFixed(1) + ' ' + c.toFixed(1) + '" transform="rotate(-90 38 38)"></circle>' : '') +
+      '</svg>';
+  }
+
+  function disegnaHome() {
+    var barra = (stato.richiestaInstallazione && !stato.installata)
+      ? '<div class="barra-avviso"><span class="testi"><strong>Installa Tutor Casa sul tablet</strong><span>Così si apre anche senza connessione</span></span>' +
+        '<button class="pulsante-principale" type="button" data-azione="installa">Installa</button></div>'
+      : '<div class="barra-avviso"><span class="testi"><strong>Controlla il funzionamento senza connessione</strong><span>Lo trovi in Dati e impostazioni</span></span>' +
+        '<a class="pulsante-principale" href="#dati">Controlla</a></div>';
+    return '<div class="home">' +
+      '<div class="colonna-sinistra">' +
+        '<header class="testata"><div class="testata-testi"><p class="etichetta">' + dataPannello() + '</p>' +
+          '<h1 class="display" tabindex="-1">Tutor Casa</h1></div>' +
+          '<a class="pulsante-servizio" href="#dati" aria-label="Dati e impostazioni">' + ICONE.impostazioni + '</a></header>' +
+        '<div class="riquadri-home">' +
+          '<div class="riquadro contatore">' + anello(stato.archivio.report % 15, 15) +
+            '<span class="testi"><span class="numero">' + String(stato.archivio.report % 15).padStart(2, '0') + '<small> / 15</small></span><span class="frase">report verso l’analisi</span></span></div>' +
+          '<div class="riquadro"><p class="etichetta">Dati</p><p class="titolo-riquadro">Salvati sul tablet</p>' +
+            (stato.archivio.ultimoBackup ? segnala('ok', 'Fatto', 'Ultimo backup ' + quando(stato.archivio.ultimoBackup)) : segnala('attenzione', 'Mai fatto', 'Nessun backup ancora')) + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<a class="pannello-hero protagonista" href="#lavatrice">' + $('modello-manopola').innerHTML +
+        '<span class="protagonista-testi"><span class="etichetta"><span class="led" aria-hidden="true"></span>Nessun lavaggio</span>' +
+        '<span class="titolo-pannello">Lavatrice</span>' +
+        '<span class="frase-hero">Le schermate sono ancora vuote: per ora serve a provare la navigazione.</span>' +
+        '<span class="pulsante-principale">Apri la lavatrice</span></span></a>' +
+      '<section class="faccende" aria-labelledby="titolo-faccende"><h2 class="titolo-sezione" id="titolo-faccende">Altre faccende</h2>' +
+        '<div class="tessere">' + tessera('pulizie', 'pulizie') + tessera('stiratura', 'stiratura') + tessera('dispensa', 'dispensa') + '</div></section>' +
+      barra +
+    '</div>';
+  }
+
+  function intestazione(s) {
+    return '<header class="intestazione">' +
+      '<button class="pulsante-servizio" type="button" data-azione="indietro" aria-label="Indietro, a ' + SCHERMATE[s.genitore].titolo + '">' + ICONE.indietro + '</button>' +
+      '<div class="intestazione-testi"><p class="etichetta">' + s.codice + '</p><h1 class="display" tabindex="-1">' + s.titolo + '</h1></div></header>';
+  }
+
+  function disegnaInterna(id) {
+    var s = SCHERMATE[id];
+    var voci = (s.figli || []).map(function (f) {
+      var c = SCHERMATE[f];
+      return '<a class="voce" href="#' + f + '"><span class="testi"><span class="codice">' + c.codice + '</span>' +
+        '<span class="nome">' + c.titolo + '</span><span class="descrizione">' + c.testo + '</span></span>' + ICONE.avanti + '</a>';
+    }).join('');
+    return '<div class="interna">' + intestazione(s) +
+      '<div class="riquadro vuota"><p class="etichetta">Schermata vuota</p><p>' + s.testo + '</p>' +
+        '<div class="segnalazione"><span class="bollino info">In arrivo</span><span class="frase">Si costruisce in ' + s.arriva + '</span></div></div>' +
+      (voci ? '<nav class="voci" aria-label="Sezioni di ' + s.titolo + '">' + voci + '</nav>' : '') +
+    '</div>';
+  }
+
+  function disegnaDati() {
+    var s = SCHERMATE.dati, o = stato.offline, online = navigator.onLine;
+    return '<div class="interna">' + intestazione(s) +
+      '<div class="riquadri">' +
+        '<div class="riquadro"><p class="etichetta">Senza connessione</p><p class="titolo-riquadro">' + o.titolo + '</p>' +
+          '<div class="segnalazione"><span class="bollino ' + o.classe + '">' + o.bollino + '</span><span class="frase">' + o.frase + '</span></div></div>' +
+        '<div class="riquadro"><p class="etichetta">Connessione</p><p class="titolo-riquadro">' + (online ? 'Presente' : 'Assente') + '</p>' +
+          '<div class="segnalazione"><span class="bollino info">Info</span><span class="frase">' + (online ? 'Puoi installare o aggiornare l’app' : 'L’app funziona lo stesso') + '</span></div></div>' +
+        '<div class="riquadro"><p class="etichetta">Tema</p><p class="titolo-riquadro">' + NOMI_TEMA[temaAttuale()] + '</p>' +
+          '<button class="pulsante-principale" type="button" data-azione="tema">Cambia tema</button></div>' +
+      '</div>' +
+      pannelloArchivio() + pannelloBackup() +
+      '<nav class="voci" aria-label="Strumenti di prova"><a class="voce" href="#vetrina"><span class="testi"><span class="codice">M0</span>' +
+        '<span class="nome">Vetrina componenti</span><span class="descrizione">Pulsanti, chip, tag, voti e allerta da provare.</span></span>' + ICONE.avanti + '</a></nav>' +
+      '<p class="etichetta piede">Versione ' + VERSIONE + '</p>' +
+    '</div>';
+  }
+
+
+
+  /* ================= Archivio dati sul tablet (IndexedDB) ================= */
+  // Un cassetto per ogni tipo di dato, come i file CSV del Documento (sezione 5).
+  var archivio = (function () {
+    var NOME = 'tutor-casa', VERSIONE_ARCHIVIO = 1, db = null;
+    var CASSETTI = {
+      impostazioni:      { keyPath: 'chiave' },
+      standard:          { keyPath: 'ID' },
+      versioni_standard: { keyPath: 'Versione' },
+      report:            { keyPath: 'ID_Report' },
+      attivita:          { keyPath: 'ID' },
+      registro_attivita: { keyPath: 'ID_Registro' },
+      prove:             { keyPath: 'id', autoIncrement: true }
+    };
+    function apri() {
+      if (db) return Promise.resolve(db);
+      return new Promise(function (ok, ko) {
+        if (!window.indexedDB) { ko(new Error('Archivio non disponibile su questo browser')); return; }
+        var r = indexedDB.open(NOME, VERSIONE_ARCHIVIO);
+        r.onupgradeneeded = function () {
+          var d = r.result;
+          Object.keys(CASSETTI).forEach(function (n) { if (!d.objectStoreNames.contains(n)) d.createObjectStore(n, CASSETTI[n]); });
+        };
+        r.onsuccess = function () { db = r.result; ok(db); };
+        r.onerror = function () { ko(r.error); };
+      });
+    }
+    // Ogni operazione è "tutto o niente": se qualcosa va storto, il cassetto resta com'era.
+    function opera(cassetto, modo, lavoro) {
+      return apri().then(function (d) {
+        return new Promise(function (ok, ko) {
+          var t = d.transaction(cassetto, modo), richiesta;
+          try { richiesta = lavoro(t.objectStore(cassetto)); }
+          catch (e) { try { t.abort(); } catch (x) {} ko(e); return; }
+          t.oncomplete = function () { ok(richiesta ? richiesta.result : undefined); };
+          t.onerror = function () { ko(t.error); };
+          t.onabort = function () { ko(t.error || new Error('Operazione annullata')); };
+        });
+      });
+    }
+    return {
+      tutti:    function (c)    { return opera(c, 'readonly',  function (s) { return s.getAll(); }); },
+      leggi:    function (c, k) { return opera(c, 'readonly',  function (s) { return s.get(k); }); },
+      conta:    function (c)    { return opera(c, 'readonly',  function (s) { return s.count(); }); },
+      salva:    function (c, v) { return opera(c, 'readwrite', function (s) { return s.put(v); }); },
+      elimina:  function (c, k) { return opera(c, 'readwrite', function (s) { return s.delete(k); }); },
+      svuota:   function (c)    { return opera(c, 'readwrite', function (s) { return s.clear(); }); },
+      sostituisciTutto: function (c, valori) {
+        return opera(c, 'readwrite', function (s) { s.clear(); valori.forEach(function (v) { s.put(v); }); return null; });
+      },
+      // Sostituisce più cassetti in un colpo solo: o cambiano tutti, o nessuno.
+      sostituisciPiu: function (mappa) {
+        var nomi = Object.keys(mappa);
+        return apri().then(function (d) {
+          return new Promise(function (ok, ko) {
+            var t = d.transaction(nomi, 'readwrite');
+            try {
+              nomi.forEach(function (n) { var st = t.objectStore(n); st.clear(); mappa[n].forEach(function (v) { st.put(v); }); });
+            } catch (e) { try { t.abort(); } catch (x) {} ko(e); return; }
+            t.oncomplete = function () { ok(); };
+            t.onerror = function () { ko(t.error); };
+            t.onabort = function () { ko(t.error || new Error('Operazione annullata')); };
+          });
+        });
+      },
+      cassetti: Object.keys(CASSETTI)
+    };
+  })();
+
+  window.TutorCasa = { archivio: archivio }; // utile per i controlli
+  stato.archivio = { pronto: false, errore: null, protetto: null, usatoKB: null, prove: [], report: 0 };
+  function aggiornaArchivio() {
+    return Promise.all([archivio.tutti('prove'), archivio.conta('report'), archivio.leggi('impostazioni', 'ultimo_backup')]).then(function (r) {
+      stato.archivio.pronto = true; stato.archivio.errore = null;
+      stato.archivio.ultimoBackup = r[2] ? r[2].valore : null;
+      stato.archivio.prove = r[0].sort(function (a, b) { return b.id - a.id; });
+      stato.archivio.report = r[1];
+    }).catch(function (e) {
+      stato.archivio.errore = e.message || String(e);
+    }).then(function () {
+      if (!navigator.storage || !navigator.storage.estimate) return;
+      return navigator.storage.estimate().then(function (st) { stato.archivio.usatoKB = Math.round((st.usage || 0) / 1024); });
+    }).then(function () { if (attuale === 'dati' || attuale === 'home') ridisegna(); });
+  }
+  function chiediProtezione() {
+    if (!navigator.storage || !navigator.storage.persisted) { stato.archivio.protetto = false; return Promise.resolve(); }
+    return navigator.storage.persisted().then(function (gia) {
+      return gia ? true : (navigator.storage.persist ? navigator.storage.persist() : false);
+    }).then(function (si) { stato.archivio.protetto = !!si; }).catch(function () { stato.archivio.protetto = false; });
+  }
+  function aggiungiProva() {
+    var n = stato.archivio.prove.length ? stato.archivio.prove[0].numero + 1 : 1;
+    return archivio.salva('prove', { numero: n, creato: new Date().toISOString() }).then(aggiornaArchivio);
+  }
+  function svuotaProve() { return archivio.svuota('prove').then(aggiornaArchivio); }
+  function quando(iso) {
+    return new Date(iso).toLocaleString('it-IT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+
+
+  /* ================= Motore CSV (formato D16) ================= */
+  // Separatore ;  ·  UTF-8 con BOM  ·  date AAAA-MM-GG  ·  liste separate da " | "
+  function col(nome, tipo, obbligatoria, campo) { return { nome: nome, tipo: tipo || 'testo', obbligatoria: !!obbligatoria, campo: campo || nome }; }
+  var SCHEMI = {
+    standard: { file: 'lavaggi_standard.csv', chiave: 'ID', colonne: [
+      col('ID', 'testo', 1), col('Categoria'), col('Tipo_Attivita'), col('Nome'), col('Capi_Inclusi'), col('Carico_Cestello'),
+      col('Programma'), col('Temp_C', 'intero'), col('Centrifuga_Giri', 'intero'), col('Detersivo'), col('Ammorbidente_Citrico'),
+      col('Foglietti_Acchiappacolore'), col('Capo_Tecnico', 'sino'), col('Checklist', 'lista'), col('Note_Speciali'), col('Da_Verificare', 'sino') ] },
+    report: { file: 'registro_report_lavaggi.csv', chiave: 'ID_Report', colonne: [
+      col('ID_Report', 'testo', 1), col('Data', 'data', 1), col('Ora_Avvio', 'ora'), col('ID_Lavaggio'), col('Versione_Standard'),
+      col('Allerta_Confermati', 'lista'), col('Capi_Lavati'), col('Carico_Reale'), col('Programma_Usato'), col('Temp_Reale', 'intero'),
+      col('Giri_Reali', 'intero'), col('Detersivo_Tipo'), col('Detersivo_Dose'), col('Ammorb_Citrico_Usato'), col('Acchiappacolore_Usati', 'intero'),
+      col('Opzioni', 'lista'), col('Durata_Min', 'intero'), col('Esito_Pulizia_Macchie', 'voto'), col('Esito_Morbidezza_Odore', 'voto'),
+      col('Anomalie_Tag', 'lista'), col('Note_Anomalie') ] },
+    attivita: { file: 'attivita_casa.csv', chiave: 'ID', colonne: [
+      col('ID', 'testo', 1), col('Categoria'), col('Tipo_Attivita'), col('Nome'), col('Frequenza_Giorni', 'intero'), col('Stagione'),
+      col('Durata_Stimata_Min', 'intero'), col('Prodotti', 'lista'), col('Checklist', 'lista'), col('Note'), col('Collegamento'), col('Attiva', 'sino') ] },
+    registro_attivita: { file: 'registro_attivita.csv', chiave: 'ID_Registro', colonne: [
+      col('ID_Registro', 'testo', 1), col('Data', 'data', 1), col('ID_Attivita'), col('Esito'), col('Durata_Min', 'intero'), col('Note') ] },
+    impostazioni: { file: 'impostazioni.csv', chiave: 'chiave', colonne: [ col('Chiave', 'testo', 1, 'chiave'), col('Valore', 'testo', 0, 'valore') ] },
+    prove: { file: 'prove_m0.csv', chiave: null, facoltativo: true, colonne: [ col('Numero', 'intero', 1, 'numero'), col('Creato', 'testo', 1, 'creato') ] }
+  };
+
+  function campoCSV(v) {
+    v = v == null ? '' : String(v);
+    return /[;"\r\n]/.test(v) || /^\s|\s$/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  }
+  function inTesto(valore, tipo) {
+    if (valore == null || valore === '') return '';
+    if (tipo === 'lista') return (Array.isArray(valore) ? valore : [valore]).join(' | ');
+    if (tipo === 'sino') return valore === true || valore === 'Sì' ? 'Sì' : 'No';
+    return String(valore);
+  }
+  function scriviCSV(schema, righe) {
+    var testa = schema.colonne.map(function (c) { return campoCSV(c.nome); }).join(';');
+    var corpo = righe.map(function (r) {
+      return schema.colonne.map(function (c) { return campoCSV(inTesto(r[c.campo], c.tipo)); }).join(';');
+    });
+    return '\ufeff' + [testa].concat(corpo).join('\r\n') + '\r\n';
+  }
+
+  function leggiCSV(testo) {
+    testo = testo.replace(/^\ufeff/, '');
+    var righe = [], riga = [], campo = '', virgolette = false, i, ch;
+    for (i = 0; i < testo.length; i++) {
+      ch = testo[i];
+      if (virgolette) {
+        if (ch === '"') { if (testo[i + 1] === '"') { campo += '"'; i++; } else virgolette = false; }
+        else campo += ch;
+      } else if (ch === '"') virgolette = true;
+      else if (ch === ';') { riga.push(campo); campo = ''; }
+      else if (ch === '\n') { riga.push(campo.replace(/\r$/, '')); righe.push(riga); riga = []; campo = ''; }
+      else campo += ch;
+    }
+    if (campo !== '' || riga.length) { riga.push(campo.replace(/\r$/, '')); righe.push(riga); }
+    return righe.filter(function (r) { return !(r.length === 1 && r[0].trim() === ''); });
+  }
+
+  // Converte una riga di testo in dato, oppure restituisce il motivo dell'errore.
+  function daTesto(testo, c) {
+    var t = testo.trim();
+    if (t === '') return c.obbligatoria ? { errore: 'è vuota, ma è obbligatoria' } : { valore: c.tipo === 'lista' ? [] : null };
+    switch (c.tipo) {
+      case 'intero': return /^-?\d+$/.test(t) ? { valore: Number(t) } : { errore: '«' + t + '» non è un numero intero' };
+      case 'voto': return /^[1-5]$/.test(t) ? { valore: Number(t) } : { errore: '«' + t + '» non è un voto da 1 a 5' };
+      case 'data':
+        var d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t), ok = d && new Date(t + 'T00:00:00Z').toISOString().slice(0, 10) === t;
+        return ok ? { valore: t } : { errore: '«' + t + '» non è una data nel formato AAAA-MM-GG' };
+      case 'ora': return /^([01]\d|2[0-3]):[0-5]\d$/.test(t) ? { valore: t } : { errore: '«' + t + '» non è un orario nel formato HH:MM' };
+      case 'sino':
+        if (/^s[iì]$/i.test(t)) return { valore: true };
+        if (/^no$/i.test(t)) return { valore: false };
+        return { errore: '«' + t + '» deve essere Sì oppure No' };
+      case 'lista': return { valore: t.split('|').map(function (x) { return x.trim(); }).filter(Boolean) };
+      default: return { valore: t };
+    }
+  }
+
+  function controllaCSV(schema, testo) {
+    var errori = [], dati = [], viste = {};
+    var righe = leggiCSV(testo);
+    var attesa = schema.colonne.map(function (c) { return c.nome; });
+    if (!righe.length) return { errori: [schema.file + ': il file è vuoto.'], dati: [] };
+    var testa = righe[0].map(function (x) { return x.trim(); });
+    if (testa.join(';') !== attesa.join(';')) {
+      return { errori: [schema.file + ', riga 1: le colonne non sono quelle previste. Servono, in quest’ordine: ' + attesa.join(';')], dati: [] };
+    }
+    righe.slice(1).forEach(function (r, i) {
+      var n = i + 2, oggetto = {};
+      if (r.length !== attesa.length) { errori.push(schema.file + ', riga ' + n + ': ha ' + r.length + ' colonne invece di ' + attesa.length + '.'); return; }
+      schema.colonne.forEach(function (c, k) {
+        var esito = daTesto(r[k], c);
+        if (esito.errore) errori.push(schema.file + ', riga ' + n + ', colonna ' + c.nome + ': ' + esito.errore + '.');
+        else oggetto[c.campo] = esito.valore;
+      });
+      if (schema.chiave && oggetto[schema.chiave] != null) {
+        if (viste[oggetto[schema.chiave]]) errori.push(schema.file + ', riga ' + n + ': il codice ' + oggetto[schema.chiave] + ' compare già alla riga ' + viste[oggetto[schema.chiave]] + '.');
+        else viste[oggetto[schema.chiave]] = n;
+      }
+      dati.push(oggetto);
+    });
+    return { errori: errori, dati: dati };
+  }
+
+  /* ================= Backup completo (.zip con i CSV) ================= */
+  var NOME_INFO = 'backup_info.csv';
+  function oggiISO() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+  function creaBackup(momento) {
+    var nomi = Object.keys(SCHEMI);
+    return Promise.all(nomi.map(function (n) { return archivio.tutti(n); })).then(function (tutti) {
+      var zip = new JSZip(), conteggi = {};
+      nomi.forEach(function (n, i) {
+        var righe = tutti[i];
+        if (n === 'prove') righe = righe.sort(function (a, b) { return a.id - b.id; });
+        // La data di questo backup viaggia dentro il backup: dopo un ripristino resta corretta.
+        if (n === 'impostazioni') righe = righe.filter(function (r) { return r.chiave !== 'ultimo_backup'; }).concat([{ chiave: 'ultimo_backup', valore: momento }]);
+        conteggi[n] = righe.length;
+        zip.file(SCHEMI[n].file, scriviCSV(SCHEMI[n], righe));
+      });
+      var info = [['App', 'Tutor Casa'], ['Versione_App', VERSIONE], ['Formato_Backup', '1'], ['Data_Backup', oggiISO()],
+                  ['Ora_Backup', new Date().toTimeString().slice(0, 5)]];
+      zip.file(NOME_INFO, '\ufeffChiave;Valore\r\n' + info.map(function (r) { return r.map(campoCSV).join(';'); }).join('\r\n') + '\r\n');
+      return zip.generateAsync({ type: 'blob', compression: 'DEFLATE', mimeType: 'application/zip' }).then(function (blob) {
+        return { blob: blob, nome: 'tutor-casa-backup-' + oggiISO() + '.zip', conteggi: conteggi };
+      });
+    });
+  }
+
+  function trovaFile(zip, nome) {
+    var trovato = null;
+    zip.forEach(function (percorso, voce) { if (!voce.dir && percorso.split('/').pop() === nome) trovato = voce; });
+    return trovato;
+  }
+
+  function controllaBackup(file) {
+    if (!window.JSZip) return Promise.resolve({ errori: ['Il lettore di file zip non è disponibile.'] });
+    return JSZip.loadAsync(file).catch(function () { return null; }).then(function (zip) {
+      if (!zip) return { errori: [file.name + ' non è un file zip leggibile.'] };
+      var voceInfo = trovaFile(zip, NOME_INFO);
+      if (!voceInfo) return { errori: [file.name + ' non sembra un backup di Tutor Casa: manca il file ' + NOME_INFO + '.'] };
+      var nomi = Object.keys(SCHEMI);
+      return Promise.all([voceInfo.async('string')].concat(nomi.map(function (n) {
+        var v = trovaFile(zip, SCHEMI[n].file); return v ? v.async('string') : null;
+      }))).then(function (testi) {
+        var errori = [], dati = {}, info = {};
+        leggiCSV(testi[0]).slice(1).forEach(function (r) { info[r[0]] = r[1]; });
+        if (info.App !== 'Tutor Casa') errori.push(NOME_INFO + ': questo file non è un backup di Tutor Casa.');
+        nomi.forEach(function (n, i) {
+          var testo = testi[i + 1];
+          if (testo == null) {
+            if (SCHEMI[n].facoltativo) { dati[n] = []; return; }
+            errori.push('Nel backup manca il file ' + SCHEMI[n].file + '.'); return;
+          }
+          var esito = controllaCSV(SCHEMI[n], testo);
+          errori = errori.concat(esito.errori); dati[n] = esito.dati;
+        });
+        return { errori: errori, dati: dati, info: info, nomeFile: file.name };
+      });
+    });
+  }
+
+  stato.backup = { fase: null, errori: [], esame: null, ultimo: null, messaggio: '' };
+
+  function scarica(blob, nome) {
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+  }
+  function puoiCondividere(blob, nome) {
+    try { return !!(navigator.canShare && navigator.canShare({ files: [new File([blob], nome, { type: 'application/zip' })] })); }
+    catch (e) { return false; }
+  }
+
+  function esportaBackup() {
+    stato.backup.fase = 'lavoro'; ridisegna();
+    var momento = new Date().toISOString();
+    return creaBackup(momento).then(function (b) {
+      stato.backup.ultimo = b;
+      scarica(b.blob, b.nome);
+      return archivio.salva('impostazioni', { chiave: 'ultimo_backup', valore: momento });
+    }).then(function () {
+      stato.backup.fase = 'esportato'; return aggiornaArchivio();
+    }).catch(function (e) {
+      stato.backup.fase = 'errori'; stato.backup.errori = ['Il backup non è stato creato: ' + (e.message || e)]; ridisegna();
+    });
+  }
+  function condividiBackup() {
+    var b = stato.backup.ultimo; if (!b) return;
+    navigator.share({ files: [new File([b.blob], b.nome, { type: 'application/zip' })], title: b.nome }).catch(function () {});
+  }
+  function esaminaBackup(file) {
+    stato.backup.fase = 'lavoro'; ridisegna();
+    controllaBackup(file).then(function (esame) {
+      stato.backup.esame = esame;
+      stato.backup.errori = esame.errori;
+      stato.backup.fase = esame.errori.length ? 'errori' : 'conferma';
+      ridisegna();
+    });
+  }
+  function ripristinaBackup() {
+    var esame = stato.backup.esame; if (!esame) return;
+    stato.backup.fase = 'lavoro'; ridisegna();
+    archivio.sostituisciPiu(esame.dati).then(function () {
+      stato.backup.fase = 'ripristinato'; stato.backup.esame = null; return aggiornaArchivio();
+    }).catch(function (e) {
+      stato.backup.fase = 'errori'; stato.backup.errori = ['Il ripristino non è riuscito e i dati non sono cambiati: ' + (e.message || e)]; ridisegna();
+    });
+  }
+  function chiudiBackup() { stato.backup.fase = null; stato.backup.esame = null; stato.backup.errori = []; ridisegna(); }
+
+  var NOMI_CASSETTI = { standard: 'lavaggi standard', report: 'report', attivita: 'attività', registro_attivita: 'attività registrate', impostazioni: 'impostazioni', prove: 'dati di prova' };
+  function riepilogo(dati) {
+    return Object.keys(SCHEMI).map(function (n) { return dati[n].length + ' ' + NOMI_CASSETTI[n]; }).join(', ');
+  }
+
+  function pannelloBackup() {
+    var b = stato.backup, a = stato.archivio, corpo = '';
+    var ultimo = a.ultimoBackup
+      ? segnala('ok', 'Fatto', 'Ultimo backup ' + quando(a.ultimoBackup))
+      : segnala('attenzione', 'Mai fatto', 'Nessun backup ancora');
+    if (b.fase === 'lavoro') corpo = '<div class="allerta-blocco">' + segnala('info', 'Attendi', 'Sto lavorando sul file…') + '</div>';
+    if (b.fase === 'esportato' && b.ultimo) {
+      corpo = '<div class="allerta-blocco">' + segnala('ok', 'Esportato', b.ultimo.nome) +
+        '<p>Il file è nella cartella Download. Contiene: ' + riepilogo(Object.keys(b.ultimo.conteggi).reduce(function (o, k) { o[k] = { length: b.ultimo.conteggi[k] }; return o; }, {})) + '.</p></div>' +
+        '<div class="fila">' + (puoiCondividere(b.ultimo.blob, b.ultimo.nome) ? '<button class="pulsante-principale" type="button" data-azione="backup-condividi">Condividi</button>' : '') +
+        '<button class="pulsante-secondario" type="button" data-azione="backup-chiudi">Fatto</button></div>';
+    }
+    if (b.fase === 'errori') {
+      var lista = b.errori.slice(0, 12).map(function (e) { return '<p>• ' + e + '</p>'; }).join('');
+      if (b.errori.length > 12) lista += '<p class="nota">E altri ' + (b.errori.length - 12) + ' errori.</p>';
+      corpo = '<div class="allerta-blocco">' + segnala('allerta', 'Rifiutato', b.errori.length === 1 ? 'Ho trovato 1 errore' : 'Ho trovato ' + b.errori.length + ' errori') +
+        lista + '<p class="nota">I tuoi dati non sono stati toccati.</p></div>' +
+        '<div class="fila"><button class="pulsante-secondario" type="button" data-azione="backup-chiudi">Chiudi</button></div>';
+    }
+    if (b.fase === 'conferma' && b.esame) {
+      var i = b.esame.info;
+      corpo = '<div class="allerta-blocco">' + segnala('ok', 'Valido', b.esame.nomeFile + (i.Data_Backup ? ', del ' + i.Data_Backup + (i.Ora_Backup ? ' alle ' + i.Ora_Backup : '') : '')) +
+        '<p>Contiene: ' + riepilogo(b.esame.dati) + '.</p>' +
+        segnala('attenzione', 'Attenzione', 'Il ripristino sostituisce tutti i dati attuali del tablet') + '</div>' +
+        '<div class="fila"><button class="pulsante-principale" type="button" data-azione="backup-ripristina">Ripristina il backup</button>' +
+        '<button class="pulsante-secondario" type="button" data-azione="backup-chiudi">Annulla</button></div>';
+    }
+    if (b.fase === 'ripristinato') {
+      corpo = '<div class="allerta-blocco">' + segnala('ok', 'Ripristinato', 'I dati del backup sono ora sul tablet') + '</div>' +
+        '<div class="fila"><button class="pulsante-secondario" type="button" data-azione="backup-chiudi">Fatto</button></div>';
+    }
+    if (!b.fase) {
+      corpo = '<p class="spiega">Un solo file .zip con tutti i dati in CSV. Tienilo al sicuro, per esempio nel tuo gruppo Telegram.</p>' +
+        '<div class="fila"><button class="pulsante-principale" type="button" data-azione="backup-esporta">Esporta il backup</button>' +
+        '<label class="pulsante-secondario">Importa un backup<input type="file" accept=".zip,application/zip" data-file="backup" class="solo-lettori"></label></div>';
+    }
+    return '<section class="pannello"><h2>Backup completo</h2>' + ultimo + corpo + '</section>';
+  }
+
+  document.addEventListener('change', function (e) {
+    var input = e.target.closest('[data-file="backup"]');
+    if (input && input.files && input.files[0]) esaminaBackup(input.files[0]);
+  });
+
+  /* ================= Vetrina componenti ================= */
+  var PAROLE_VOTO = ['', 'Pessimo', 'Scarso', 'Discreto', 'Buono', 'Ottimo'];
+  var ICONA_PIU = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg>';
+  var ICONA_SPUNTA = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
+  var prova = { carico: 'Metà', anomalie: { Odore: true }, voti: { macchie: 4, morbidezza: 0 } };
+
+  function chip(gruppo, valore) {
+    return '<button class="chip" type="button" role="radio" aria-checked="' + (prova[gruppo] === valore) + '" data-chip="' + gruppo + '" data-valore="' + valore + '">' + valore + '</button>';
+  }
+  function tagAnomalia(nome) {
+    var on = !!prova.anomalie[nome];
+    return '<button class="tag" type="button" aria-pressed="' + on + '" data-tag="' + nome + '">' + (on ? ICONA_SPUNTA : ICONA_PIU) + nome + '</button>';
+  }
+  function rigaVoti(chiave, nome) {
+    var v = prova.voti[chiave], bottoni = '';
+    for (var i = 1; i <= 5; i++) {
+      bottoni += '<button class="voto" type="button" role="radio" aria-checked="' + (v === i) + '" aria-label="' + i + ', ' + PAROLE_VOTO[i] + '" data-voto="' + chiave + '" data-valore="' + i + '">' + i + '</button>';
+    }
+    return '<div class="gruppo"><div class="voto-testa"><span class="gruppo-titolo" id="voto-' + chiave + '">' + nome + '</span>' +
+      '<span class="voto-parola">' + (v ? PAROLE_VOTO[v] : 'Tocca un voto') + '</span></div>' +
+      '<div class="voti" role="radiogroup" aria-labelledby="voto-' + chiave + '">' + bottoni + '</div></div>';
+  }
+  function allerta(classe, parola, codice, frase, nota) {
+    return '<div class="allerta-blocco"><div class="riga"><span class="bollino ' + classe + '">' + parola + '</span>' +
+      (codice ? '<span class="codice">' + codice + '</span>' : '') + '</div><p>' + frase + '</p>' + (nota ? '<p class="nota">' + nota + '</p>' : '') + '</div>';
+  }
+  function segnala(classe, parola, frase) {
+    return '<div class="segnalazione"><span class="bollino ' + classe + '">' + parola + '</span><span class="frase">' + frase + '</span></div>';
+  }
+
+
+  function pannelloArchivio() {
+    var a = stato.archivio;
+    if (a.errore) {
+      return '<section class="pannello"><h2>Archivio sul tablet</h2>' + segnala('allerta', 'Errore', 'L’archivio non si apre: ' + a.errore) + '</section>';
+    }
+    var protezione = a.protetto === null ? segnala('attenzione', 'Attendi', 'Controllo la protezione dei dati')
+      : a.protetto ? segnala('ok', 'Protetto', 'Il tablet non svuoterà l’archivio da solo')
+      : segnala('attenzione', 'Non protetto', 'Installa l’app sulla schermata Home per proteggerlo');
+    var elenco = a.prove.slice(0, 5).map(function (p) {
+      return '<div class="segnalazione"><span class="bollino ok">Salvato</span><span class="frase">Dato di prova n. ' + p.numero + ', ' + quando(p.creato) + '</span></div>';
+    }).join('');
+    var altri = a.prove.length > 5 ? '<p class="spiega">E altri ' + (a.prove.length - 5) + ' più vecchi.</p>' : '';
+    return '<section class="pannello"><h2>Archivio sul tablet</h2>' +
+      protezione +
+      segnala('info', 'Spazio', a.usatoKB === null ? 'Non disponibile' : 'Circa ' + a.usatoKB + ' KB usati') +
+      '<div class="allerta-blocco"><p class="gruppo-titolo">Prova dell’archivio</p>' +
+        '<p>Aggiungi un dato di prova, chiudi del tutto l’app e riaprila: il dato deve essere ancora qui.</p>' +
+        (elenco || '<p class="nota">Nessun dato di prova salvato.</p>') + altri + '</div>' +
+      '<div class="fila"><button class="pulsante-principale" type="button" data-azione="prova-aggiungi">Aggiungi un dato di prova</button>' +
+        (a.prove.length ? '<button class="pulsante-secondario" type="button" data-azione="prova-svuota">Cancella le prove</button>' : '') + '</div>' +
+    '</section>';
+  }
+
+  function disegnaVetrina() {
+    var s = SCHERMATE.vetrina;
+    return '<div class="interna">' + intestazione(s) +
+      '<div class="vetrina">' +
+        '<section class="pannello"><h2>Pulsanti</h2>' +
+          '<p class="spiega">Principale lime per l’azione più frequente, uno per pannello. Secondario per l’alternativa, come “Annulla”. Di servizio per impostazioni e indietro.</p>' +
+          '<div class="fila"><button class="pulsante-principale" type="button">Avvia lavaggio</button>' +
+          '<button class="pulsante-secondario" type="button">Annulla</button>' +
+          '<button class="pulsante-servizio" type="button" aria-label="Impostazioni">' + ICONE.impostazioni + '</button></div></section>' +
+
+        '<section class="pannello"><h2>Chip · una sola scelta</h2>' +
+          '<p class="spiega">Per scegliere un valore tra pochi. Tocca per cambiare.</p>' +
+          '<div class="gruppo"><span class="gruppo-titolo" id="titolo-carico">Carico del cestello</span>' +
+          '<div class="fila" role="radiogroup" aria-labelledby="titolo-carico">' + ['1/3', 'Metà−', 'Metà', 'Metà+', '2/3'].map(function (v) { return chip('carico', v); }).join('') + '</div></div></section>' +
+
+        '<section class="pannello"><h2>Tag · più scelte insieme</h2>' +
+          '<p class="spiega">Per segnare le anomalie nel report. Ogni tag si accende e si spegne da solo.</p>' +
+          '<div class="fila">' + ['Pelucchi/pallini', 'Odore', 'Scolorimento', 'Macchie rimaste', 'Residui di detersivo', 'Capi rigidi', 'Restringimento', 'Troppe pieghe'].map(tagAnomalia).join('') + '</div></section>' +
+
+        '<section class="pannello"><h2>Voti da 1 a 5</h2>' +
+          '<p class="spiega">I due esiti obbligatori del report. La parola accanto conferma il voto scelto.</p>' +
+          rigaVoti('macchie', 'Pulizia e macchie') + rigaVoti('morbidezza', 'Morbidezza e odore') + '</section>' +
+
+        '<section class="pannello"><h2>Allerta del carico</h2>' +
+          '<p class="spiega">Quattro livelli, ognuno con il codice della sua regola.</p>' +
+          '<div class="elenco">' +
+            allerta('allerta', 'Allerta', 'R01', 'Candeggina al cloro con acido citrico o aceto: si sviluppa gas cloro.', 'Prima di avviare ti chiederò di confermare.') +
+            allerta('attenzione', 'Attenzione', 'R10', 'Jeans con capi chiari: i jeans possono stingere.') +
+            allerta('info', 'Consiglio', 'R16', 'Intimo nel carico: usa il sacchetto a rete.') +
+            allerta('ok', 'Ok', '', 'Nessun problema nel carico.') +
+          '</div></section>' +
+
+        '<section class="pannello"><h2>Scadenze nella Home</h2>' +
+          '<p class="spiega">Esempi di come appariranno le attività da M5 in poi.</p>' +
+          '<div class="elenco">' + segnala('da-fare', 'Scaduta', 'Filtro, da 4 giorni') + segnala('da-fare', 'Oggi', 'Bagno, pulizia completa') +
+          segnala('attenzione', 'In arrivo', 'Lavaggio a vuoto, tra 2 giorni') + segnala('ok', 'Fatto', 'Stiratura camicie') + '</div></section>' +
+      '</div></div>';
+  }
+
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-chip], [data-tag], [data-voto]');
+    if (!b) return;
+    if (b.dataset.chip) prova[b.dataset.chip] = b.dataset.valore;
+    if (b.dataset.tag) prova.anomalie[b.dataset.tag] = !prova.anomalie[b.dataset.tag];
+    if (b.dataset.voto) prova.voti[b.dataset.voto] = Number(b.dataset.valore);
+    var sel = b.dataset.chip ? '[data-chip="' + b.dataset.chip + '"][data-valore="' + b.dataset.valore + '"]'
+            : b.dataset.tag ? '[data-tag="' + b.dataset.tag + '"]'
+            : '[data-voto="' + b.dataset.voto + '"][data-valore="' + b.dataset.valore + '"]';
+    var y = window.scrollY; ridisegna(); window.scrollTo(0, y);
+    var nuovo = document.querySelector(sel); if (nuovo) nuovo.focus({ preventScroll: true });
+  });
+
+  var attuale = idDaIndirizzo();
+  function disegna(id, direzione) {
+    var schermo = $('schermo');
+    schermo.innerHTML = id === 'home' ? disegnaHome() : id === 'dati' ? disegnaDati() : id === 'vetrina' ? disegnaVetrina() : disegnaInterna(id);
+    schermo.className = 'schermo ' + direzione;
+    document.title = id === 'home' ? 'Tutor Casa' : SCHERMATE[id].titolo + ' · Tutor Casa';
+    if (direzione !== 'apertura') { window.scrollTo(0, 0); var h = schermo.querySelector('h1'); if (h) h.focus({ preventScroll: true }); }
+  }
+  function ridisegna() { disegna(attuale, ''); }
+
+  /* ================= Navigazione ================= */
+  // Se l'app si apre su una schermata interna, ricostruisce la strada dalla Home:
+  // così il tasto indietro (anche il gesto di Android) risale sempre l'albero.
+  if (attuale !== 'home') {
+    history.replaceState(null, '', '#home');
+    percorso(attuale).slice(1).forEach(function (id) { history.pushState(null, '', '#' + id); });
+  } else if (location.hash !== '#home') {
+    history.replaceState(null, '', '#home');
+  }
+  disegna(attuale, 'apertura');
+  chiediProtezione().then(aggiornaArchivio);
+
+  window.addEventListener('hashchange', function () {
+    var nuovo = idDaIndirizzo();
+    if (nuovo === attuale) return;
+    var direzione = profondita(nuovo) < profondita(attuale) ? 'indietro' : 'avanti';
+    attuale = nuovo;
+    disegna(nuovo, direzione);
+  });
+
+  document.addEventListener('click', function (e) {
+    var bersaglio = e.target.closest('[data-azione]');
+    if (!bersaglio) return;
+    var azione = bersaglio.dataset.azione;
+    if (azione === 'indietro') history.back();
+    if (azione === 'tema') cambiaTema();
+    if (azione === 'installa') installa();
+    if (azione === 'prova-aggiungi') aggiungiProva();
+    if (azione === 'prova-svuota') svuotaProve();
+    if (azione === 'backup-esporta') esportaBackup();
+    if (azione === 'backup-condividi') condividiBackup();
+    if (azione === 'backup-ripristina') ripristinaBackup();
+    if (azione === 'backup-chiudi') chiudiBackup();
+  });
+
+  /* ================= Tema ================= */
+  function aggiornaColoreBarra() {
+    var colore = getComputedStyle(document.documentElement).getPropertyValue('--ground').trim();
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', colore);
+  }
+  function cambiaTema() {
+    var prossimo = { auto: 'scuro', scuro: 'chiaro', chiaro: 'auto' }[temaAttuale()];
+    if (prossimo === 'auto') delete document.documentElement.dataset.tema;
+    else document.documentElement.dataset.tema = prossimo;
+    try { localStorage.setItem('tc-tema', prossimo); } catch (e) {}
+    aggiornaColoreBarra();
+    ridisegna();
+  }
+  aggiornaColoreBarra();
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', aggiornaColoreBarra);
+
+  /* ================= Connessione e funzionamento offline ================= */
+  function seDati() { if (attuale === 'dati') ridisegna(); }
+  window.addEventListener('online', seDati);
+  window.addEventListener('offline', seDati);
+  var NON_ATTIVO = { titolo: 'Non attivo', bollino: 'Da fare', classe: 'da-fare', frase: 'Apri l’app dal suo sito con la connessione' };
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    navigator.serviceWorker.register('sw.js').catch(function () { stato.offline = NON_ATTIVO; seDati(); });
+    navigator.serviceWorker.ready.then(function () {
+      stato.offline = { titolo: 'Pronta', bollino: 'Fatto', classe: 'ok', frase: 'Puoi usarla anche in modalità aereo' };
+      seDati();
+    });
+  } else {
+    stato.offline = NON_ATTIVO;
+  }
+
+  /* ================= Installazione (Chrome per Android) ================= */
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault(); stato.richiestaInstallazione = e;
+    if (attuale === 'home') ridisegna();
+  });
+  function installa() {
+    var r = stato.richiestaInstallazione; if (!r) return;
+    r.prompt();
+    r.userChoice.finally(function () { stato.richiestaInstallazione = null; if (attuale === 'home') ridisegna(); });
+  }
+  window.addEventListener('appinstalled', function () { stato.installata = true; if (attuale === 'home') ridisegna(); });
+})();
+</script>
+</body>
+</html>
