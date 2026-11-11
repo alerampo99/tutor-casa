@@ -467,7 +467,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
 <script>
 (function () {
   'use strict';
-  var VERSIONE = '0.7.1';
+  var VERSIONE = '0.7.2';
   var $ = function (id) { return document.getElementById(id); };
 
   /* ================= Albero delle schermate (Documento, sezione 3) ================= */
@@ -545,7 +545,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
       { id: 'esiti',        nome: 'Esiti medi',           titolo: 'Come vanno i lavaggi',          arriva: 'M4' },
       { id: 'rivedere',     nome: 'Standard da rivedere', titolo: 'Lavaggi con media sotto 3,5',   arriva: 'M4' },
       { id: 'periodo',      nome: 'Lavaggi del periodo',  titolo: 'Quanti lavaggi in settimana',   arriva: 'M4' },
-      { id: 'database',     nome: 'Database standard',    titolo: 'Versione delle ricette in uso', arriva: 'M2' }
+      { id: 'database',     nome: 'Database standard',    titolo: 'Versione delle ricette in uso' }
     ]
   };
   var COPPIA_INIZIALE = { lavatrice: ['contatore', 'manutenzione'] };
@@ -574,6 +574,14 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
       var n = stato.archivio.report % 15;
       return '<div class="riquadro contatore' + classe + '">' + anello(n, 15) +
         '<span class="testi"><span class="numero">' + String(n).padStart(2, '0') + '<small> / 15</small></span><span class="frase">report verso l’analisi</span></span></div>';
+    }
+    if (id === 'database') {
+      var S = stato.standard;
+      if (!S.elenco.length) return '<div class="riquadro' + classe + '"><p class="etichetta">Database standard</p><p class="titolo-riquadro">Nessuno standard</p>' +
+        segnala('attenzione', 'Da importare', 'Da Dati e impostazioni') + '</div>';
+      var n = standardDaRivedere();
+      return '<div class="riquadro' + classe + '"><p class="etichetta">Database standard</p><p class="numero">' + (S.versione || '—') + '</p>' +
+        segnala(n ? 'attenzione' : 'ok', n ? 'Avvisi' : 'In regola', S.elenco.length + ' standard' + (n ? ', ' + n + ' da rivedere' : '')) + '</div>';
     }
     return '<div class="riquadro spento' + classe + '"><p class="etichetta">' + v.nome + '</p><p class="titolo-riquadro">' + v.titolo + '</p>' +
       '<p class="frase-spenta">Arriva in ' + v.arriva + '</p></div>';
@@ -784,7 +792,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
   function aggiornaArchivio() {
     return Promise.all([archivio.tutti('prove'), archivio.conta('report'), archivio.tutti('impostazioni'), archivio.tutti('profilo_macchina'), archivio.tutti('profilo_programmi'), archivio.tutti('standard'), archivio.tutti('versioni_standard')]).then(function (r) {
       leggiProfilo(r[3], r[4]);
-      leggiStandard(r[5], r[6]);
+      leggiStandard(r[5], r[6], r[2]);
       stato.archivio.pronto = true; stato.archivio.errore = null;
       var imp = {}; r[2].forEach(function (x) { imp[x.chiave] = x.valore; });
       stato.archivio.ultimoBackup = imp.ultimo_backup || null;
@@ -1260,7 +1268,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
   // D41: i tessuti si capiscono dal programma e dalle parole di Nome e Capi_Inclusi.
   var PAROLE_TESSUTI = {
     bianchi: /\bbianc|\bchiar/, lana: /\blana\b|cachemire|cashmere|merino/, seta: /\bseta\b|viscosa/,
-    spugna: /spugna|asciugaman|accappatoi|\bteli\b|\bbagno\b/, elastan: /elastan|spandex|lycra|legging/, pile: /\bpile\b|fleece/
+    spugna: /spugna|asciugaman|accappatoi|\bteli\b|\bbagno\b/, elastan: /elastan|elasticizzat|spandex|lycra|legging/, pile: /\bpile\b|fleece/
   };
   function tessuti(st) {
     var t = ((st.Nome || '') + ' ' + (st.Capi_Inclusi || '')).toLowerCase(), r = {};
@@ -1268,6 +1276,12 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
     if (st.Programma === '10') r.lana = true;
     if (st.Programma === '9') r.seta = true;
     return r;
+  }
+  // Quanti standard salvati hanno almeno un avviso delle regole V (V09 compreso)
+  function standardDaRivedere() {
+    if (!stato.standard.elenco.length || !stato.profilo.programmi.length) return 0;
+    var ids = {}; controllaStandard(stato.standard.elenco, stato.profilo).forEach(function (x) { ids[x.id] = 1; });
+    return Object.keys(ids).length;
   }
   function ordineStandard(a, b) {
     var x = /^([SO])(\d+)$/.exec(a.ID) || ['', 'Z', 0], y = /^([SO])(\d+)$/.exec(b.ID) || ['', 'Z', 0];
@@ -1338,11 +1352,12 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
 
   /* ----- Import semplice dei lavaggi standard (D43; anteprima differenze e ripristino in L4.3, M4) ----- */
   stato.standard = { elenco: [], versioni: [], versione: null, fase: null, errori: [], esame: null };
-  function leggiStandard(elenco, versioni) {
-    var S = stato.standard;
+  function leggiStandard(elenco, versioni, impostazioni) {
+    var S = stato.standard, scelta = (impostazioni || []).filter(function (x) { return x.chiave === 'standard_versione'; })[0];
     S.elenco = elenco.slice().sort(ordineStandard);
     S.versioni = versioni.slice().sort(function (a, b) { return (b.Data + (b.Ora || '')).localeCompare(a.Data + (a.Ora || '')); });
-    S.versione = S.versioni.length ? S.versioni[0].Versione : null;
+    // La versione in uso è scritta nelle impostazioni a ogni import (servirà anche al ripristino in M4)
+    S.versione = scelta ? scelta.valore : S.versioni.length ? S.versioni[0].Versione : null;
   }
   function esaminaStandard(file) {
     var S = stato.standard; S.fase = 'lavoro'; S.errori = []; S.esame = null; ridisegna();
@@ -1370,7 +1385,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
     S.fase = 'lavoro'; ridisegna();
     var adesso = new Date();
     var versione = { Versione: e.versione, Data: oggiISO(), Ora: adesso.toTimeString().slice(0, 5), Numero_Standard: e.dati.length, Avvisi: e.avvisi, File: e.nomeFile };
-    archivio.scriviInsieme({ standard: e.dati }, { versioni_standard: [versione] }).then(function () {
+    archivio.scriviInsieme({ standard: e.dati }, { versioni_standard: [versione], impostazioni: [{ chiave: 'standard_versione', valore: e.versione }] }).then(function () {
       S.fase = 'importato'; return aggiornaArchivio();
     }).catch(function (x) { S.fase = 'errori'; S.errori = ['Gli standard non sono stati salvati e quelli di prima non sono cambiati: ' + (x.message || x)]; ridisegna(); });
   }
@@ -1430,7 +1445,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
       '<span class="valori"><span>Prog. ' + st.Programma + ' · ' + st.Temp_C + '°</span><span>' + (st.Centrifuga_Giri ? st.Centrifuga_Giri + ' giri' : 'Senza centrifuga') + '</span><span>' + st.Carico_Cestello + '</span></span></li>';
   }
   function disegnaDatabase() {
-    var s = SCHERMATE.database, S = stato.standard, testa, ultima = S.versioni[0];
+    var s = SCHERMATE.database, S = stato.standard, testa, ultima = S.versioni.filter(function (v) { return v.Versione === S.versione; })[0];
     // Avvisi degli standard salvati, ricalcolati sul profilo attuale (servono le regole, non il file)
     S.avvisiAttuali = {};
     if (S.elenco.length && stato.profilo.programmi.length) controllaStandard(S.elenco, stato.profilo).forEach(function (x) {
