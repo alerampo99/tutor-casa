@@ -467,7 +467,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
 <script>
 (function () {
   'use strict';
-  var VERSIONE = '0.7.2';
+  var VERSIONE = '0.7.4';
   var $ = function (id) { return document.getElementById(id); };
 
   /* ================= Albero delle schermate (Documento, sezione 3) ================= */
@@ -492,7 +492,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
     dispensa:           { codice: 'C3',   titolo: 'Dispensa e frigo',       genitore: 'home',             arriva: 'M8', testo: 'Attività settimanali e occasionali, con checklist.' },
     dati:               { codice: 'D1',   titolo: 'Dati e impostazioni',    genitore: 'home',             arriva: 'M0', testo: 'Import ed export di tutti i CSV, backup e tema.' },
     'info-home':        { codice: 'D1.1', titolo: 'Info della Home',        genitore: 'dati',             arriva: 'M1', testo: 'Scegli le due info che vedi appena apri l’app.' },
-    database:           { codice: 'D1.3', titolo: 'Database standard',      genitore: 'dati',             arriva: 'M2', testo: 'Importa i lavaggi standard e controllali con le regole V.' },
+    database:           { codice: 'D1.3', titolo: 'Database standard',      genitore: 'dati',             arriva: 'M2', testo: 'Importa i lavaggi standard e la Guida rapida, controllati prima di salvarli.' },
     profilo:            { codice: 'D1.2', titolo: 'Profilo lavatrice',      genitore: 'dati',             arriva: 'M2', testo: 'Modello, programmi e limiti della tua lavatrice.' },
     vetrina:            { codice: 'M0',   titolo: 'Vetrina componenti',     genitore: 'dati',             arriva: 'M0', testo: 'Tutti i componenti dell’app, da provare. Pagina provvisoria.' }
   };
@@ -703,7 +703,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
   /* ================= Archivio dati sul tablet (IndexedDB) ================= */
   // Un cassetto per ogni tipo di dato, come i file CSV del Documento (sezione 5).
   var archivio = (function () {
-    var NOME = 'tutor-casa', VERSIONE_ARCHIVIO = 2, db = null;
+    var NOME = 'tutor-casa', VERSIONE_ARCHIVIO = 3, db = null;
     var CASSETTI = {
       impostazioni:      { keyPath: 'chiave' },
       standard:          { keyPath: 'ID' },
@@ -714,7 +714,9 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
       prove:             { keyPath: 'id', autoIncrement: true },
       // Da M2 (D25): il profilo della lavatrice, importato da profilo_lavatrice.zip
       profilo_macchina:  { keyPath: 'Chiave' },
-      profilo_programmi: { keyPath: 'Programma' }
+      profilo_programmi: { keyPath: 'Programma' },
+      // Da M2 (D46): le voci della Guida rapida, importate da guida_rapida_vX.Y.csv
+      guida:             { keyPath: 'ID' }
     };
     function apri() {
       if (db) return Promise.resolve(db);
@@ -790,9 +792,10 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
   window.TutorCasa = { archivio: archivio }; // utile per i controlli
   stato.archivio = { pronto: false, errore: null, protetto: null, usatoKB: null, prove: [], report: 0 };
   function aggiornaArchivio() {
-    return Promise.all([archivio.tutti('prove'), archivio.conta('report'), archivio.tutti('impostazioni'), archivio.tutti('profilo_macchina'), archivio.tutti('profilo_programmi'), archivio.tutti('standard'), archivio.tutti('versioni_standard')]).then(function (r) {
+    return Promise.all([archivio.tutti('prove'), archivio.conta('report'), archivio.tutti('impostazioni'), archivio.tutti('profilo_macchina'), archivio.tutti('profilo_programmi'), archivio.tutti('standard'), archivio.tutti('versioni_standard'), archivio.tutti('guida')]).then(function (r) {
       leggiProfilo(r[3], r[4]);
       leggiStandard(r[5], r[6], r[2]);
+      leggiGuida(r[7], r[2]);
       stato.archivio.pronto = true; stato.archivio.errore = null;
       var imp = {}; r[2].forEach(function (x) { imp[x.chiave] = x.valore; });
       stato.archivio.ultimoBackup = imp.ultimo_backup || null;
@@ -843,6 +846,9 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
       col('ID_Registro', 'testo', 1), col('Data', 'data', 1), col('ID_Attivita'), col('Esito'), col('Durata_Min', 'intero'), col('Note') ] },
     impostazioni: { file: 'impostazioni.csv', chiave: 'chiave', colonne: [ col('Chiave', 'testo', 1, 'chiave'), col('Valore', 'testo', 0, 'valore') ] },
     prove: { file: 'prove_m0.csv', chiave: null, facoltativo: true, colonne: [ col('Numero', 'intero', 1, 'numero'), col('Creato', 'testo', 1, 'creato') ] },
+    // Guida rapida (D46, D48): testo breve e spiegazione a paragrafi, con i codici collegati
+    guida: { file: 'guida_rapida.csv', chiave: 'ID', facoltativo: true, colonne: [
+      col('ID', 'testo', 1), col('Sezione', 'testo', 1), col('Titolo', 'testo', 1), col('Breve', 'testo', 1), col('Spiegazione', 'lista', 1), col('Regole', 'lista') ] },
     // Storico delle versioni degli standard (P09): una riga per ogni import
     versioni_standard: { file: 'versioni_standard.csv', chiave: 'Versione', facoltativo: true, colonne: [
       col('Versione', 'testo', 1), col('Data', 'data', 1), col('Ora', 'ora'), col('Numero_Standard', 'intero', 1), col('Avvisi', 'intero'), col('File') ] },
@@ -1049,7 +1055,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
   }
   function chiudiBackup() { stato.backup.fase = null; stato.backup.esame = null; stato.backup.errori = []; ridisegna(); }
 
-  var NOMI_CASSETTI = { standard: 'lavaggi standard', report: 'report', attivita: 'attività', registro_attivita: 'attività registrate', impostazioni: 'impostazioni', prove: 'dati di prova', versioni_standard: 'versioni degli standard', profilo_macchina: 'dati della macchina', profilo_programmi: 'programmi del profilo' };
+  var NOMI_CASSETTI = { standard: 'lavaggi standard', report: 'report', attivita: 'attività', registro_attivita: 'attività registrate', impostazioni: 'impostazioni', prove: 'dati di prova', versioni_standard: 'versioni degli standard', guida: 'voci della guida', profilo_macchina: 'dati della macchina', profilo_programmi: 'programmi del profilo' };
   function riepilogo(dati) {
     return Object.keys(SCHEMI).map(function (n) { return dati[n].length + ' ' + NOMI_CASSETTI[n]; }).join(', ');
   }
@@ -1469,9 +1475,166 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
     var elenco = S.elenco.length ? '<section class="pannello"><h2>Standard nell’app</h2>' +
       '<div class="gruppo"><h3 class="gruppo-titolo">Settimanali</h3><ul class="programmi">' + S.elenco.filter(function (x) { return x.ID[0] === 'S'; }).map(rigaStandard).join('') + '</ul></div>' +
       '<div class="gruppo"><h3 class="gruppo-titolo">Occasionali</h3><ul class="programmi">' + S.elenco.filter(function (x) { return x.ID[0] === 'O'; }).map(rigaStandard).join('') + '</ul></div></section>' : '';
-    return '<div class="interna">' + intestazione(s) + testa + pannelloImportStandard() + elenco + '</div>';
+    return '<div class="interna">' + intestazione(s) + testa + pannelloImportStandard() + pannelloGuida() + elenco + '</div>';
   }
   window.TutorCasa.regole = { controllaStandard: controllaStandard, tessuti: tessuti };
+
+  /* ================= Regole R: verifica del carico prima di ogni lavaggio (M2 · D44, D45) ================= */
+  // Il motore giudica il carico reale. Le schermate che lo usano (L1.1 e L2) arrivano in M3.
+  // Un carico si descrive in cinque parti; questi sono i valori ammessi (id e nome visibile).
+  var CARICO = {
+    tessuti: { cotone: 'Cotone', sintetico: 'Sintetico', tecnico: 'Tecnico/sport', jeans: 'Jeans', spugna: 'Spugna', lana: 'Lana', seta: 'Seta',
+      delicati: 'Delicati (viscosa, lingerie)', elastan: 'Elastan', pile: 'Pile', garzato: 'Cotone garzato, flanella, felpe' },
+    colori: { bianchi: 'Bianchi', chiari: 'Chiari', colorati: 'Colorati', scuri: 'Scuri' },
+    speciali: { nuovi: 'Capi nuovi che stingono', piumone: 'Piumone o coperta pesante', scarpe: 'Scarpe', intimo: 'Intimo', macchie: 'Macchie ostinate',
+      tappeti: 'Tappeti o passatoie', imbottiti: 'Giacca imbottita o piumino' },
+    // D45: «Pieno» esiste solo nella verifica del carico e nel report, mai negli standard
+    riempimento: ['1/3', 'Metà−', 'Metà', 'Metà+', '2/3', 'Pieno', '1 pezzo', 'Pochi pezzi', 'Max 2 paia', 'A vuoto'],
+    additivi: { cloro: 'Candeggina al cloro', ossigeno: 'Candeggina ossigenata', citrico: 'Acido citrico', aceto: 'Aceto', ammorbidente: 'Ammorbidente' }
+  };
+  var LIVELLI_R = ['rosso', 'ambra', 'info'];
+  function verificaCarico(carico) {
+    var c = carico || {}, esiti = [];
+    function ha(parte, id) { return (c[parte] || []).indexOf(id) >= 0; }
+    function uno(parte, ids) { return ids.some(function (id) { return ha(parte, id); }); }
+    function nomi(parte, ids) { return ids.filter(function (id) { return ha(parte, id); }).map(function (id) { return CARICO[parte][id].toLowerCase(); }).join(', '); }
+    function metti(livello, regola, frase) { esiti.push({ livello: livello, regola: regola, frase: frase }); }
+    var tessuti = c.tessuti || [], altriCapi = tessuti.length > 0 || uno('speciali', ['intimo', 'piumone', 'imbottiti', 'tappeti']);
+    // Rosso: rischio per la sicurezza o danno certo a capi o macchina
+    if (ha('additivi', 'cloro') && uno('additivi', ['citrico', 'aceto']))
+      metti('rosso', 'R01', 'Candeggina al cloro con ' + nomi('additivi', ['citrico', 'aceto']) + ': insieme sviluppano gas cloro. Usane uno solo.');
+    if (ha('additivi', 'cloro') && (uno('colori', ['colorati', 'scuri']) || uno('tessuti', ['elastan', 'lana', 'tecnico', 'seta'])))
+      metti('rosso', 'R02', 'Candeggina al cloro su ' + [nomi('colori', ['colorati', 'scuri']), nomi('tessuti', ['elastan', 'lana', 'tecnico', 'seta'])].filter(Boolean).join(', ') + ': scolora e rovina le fibre. Va solo sul cotone bianco; qui usa quella ossigenata.');
+    if (ha('additivi', 'ammorbidente') && (ha('tessuti', 'tecnico') || ha('speciali', 'scarpe')))
+      metti('rosso', 'R03', 'Ammorbidente su ' + (ha('tessuti', 'tecnico') ? 'capi tecnici' : 'scarpe') + ': tappa la microfibra e fissa gli odori. Usa il citrico.');
+    if (ha('speciali', 'piumone'))
+      metti('rosso', 'R04', 'Piumone o coperta pesante: troppo pesante per questa lavatrice. Portalo in lavanderia.');
+    if (ha('colori', 'bianchi') && (ha('colori', 'scuri') || ha('speciali', 'nuovi')))
+      metti('rosso', 'R05', 'Bianchi con ' + (ha('colori', 'scuri') ? 'scuri' : 'capi nuovi che stingono') + ': i bianchi si macchiano di colore. Separali.');
+    if (ha('tessuti', 'lana') && tessuti.some(function (t) { return t !== 'lana'; }))
+      metti('rosso', 'R06', 'Lana con altri tessuti: la lana va lavata da sola, col programma Lana.');
+    if (uno('tessuti', ['seta', 'delicati']) && (uno('tessuti', ['jeans', 'spugna']) || ha('speciali', 'scarpe')))
+      metti('rosso', 'R07', 'Seta o delicati con ' + [nomi('tessuti', ['jeans', 'spugna']), ha('speciali', 'scarpe') ? 'scarpe' : ''].filter(Boolean).join(', ') + ': li strappano e li consumano. Lavali a parte.');
+    if (ha('tessuti', 'spugna') && ha('tessuti', 'tecnico'))
+      metti('rosso', 'R08', 'Spugna con capi tecnici: i pelucchi della spugna si infilano nella microfibra. Lavali a parte.');
+    // Ambra: rischio sulla qualità del risultato
+    if (ha('tessuti', 'tecnico') && ha('tessuti', 'garzato'))
+      metti('ambra', 'R09', 'Capi tecnici con cotone garzato, flanella o felpe: si riempiono di pelucchi.');
+    if (ha('tessuti', 'jeans') && uno('colori', ['bianchi', 'chiari']))
+      metti('ambra', 'R10', 'Jeans con capi ' + nomi('colori', ['bianchi', 'chiari']) + ': il jeans può stingere. Aggiungi un foglietto acchiappacolore o separali.');
+    if (c.riempimento === 'Pieno')
+      metti('ambra', 'R11', 'Cestello pieno: lascia un pugno libero in alto, o i capi non si lavano bene.');
+    if (ha('tessuti', 'tecnico') && ['Metà+', '2/3', 'Pieno'].indexOf(c.riempimento) >= 0)
+      metti('ambra', 'R12', 'Capi tecnici con carico oltre metà (' + c.riempimento + '): resta a metà cestello, così si sciacquano bene.');
+    if (ha('additivi', 'ammorbidente') && ha('tessuti', 'spugna'))
+      metti('ambra', 'R13', 'Ammorbidente sulla spugna: toglie assorbenza. Usa il citrico.');
+    if (ha('speciali', 'scarpe') && altriCapi)
+      metti('ambra', 'R14', 'Scarpe con altri capi: sporcano e sbattono. Lavale da sole, massimo 2 paia.');
+    if (ha('speciali', 'tappeti'))
+      metti('ambra', 'R17', 'Tappeti o passatoie: lavali da soli; se hanno il fondo gommato, al massimo 40 °C perché la gomma si sbriciola e intasa il filtro. Quelli grandi e pesanti vanno in lavanderia.');
+    if (ha('speciali', 'imbottiti'))
+      metti('ambra', 'R18', 'Giacca imbottita o piumino: da sola o con pochi capi leggeri, con 2–3 palline da tennis e centrifuga bassa, così l’imbottitura non si raggruma.');
+    // Info: consigli
+    if (ha('speciali', 'macchie'))
+      metti('info', 'R15', 'Macchie ostinate: pretrattale prima. Sangue ed erba con acqua fredda e sapone di Marsiglia, grasso con detersivo per piatti.');
+    if (ha('speciali', 'intimo'))
+      metti('info', 'R16', 'Intimo nel carico: mettilo nel sacchetto a rete.');
+    return esiti.sort(function (a, b) { return LIVELLI_R.indexOf(a.livello) - LIVELLI_R.indexOf(b.livello) || (a.regola < b.regola ? -1 : 1); });
+  }
+  // Codici da salvare nel report: Allerta_Confermati è una lista (nel CSV separata da " | ")
+  function codiciAllerta(esiti) { return esiti.map(function (x) { return x.regola; }); }
+  window.TutorCasa.regole.verificaCarico = verificaCarico;
+  window.TutorCasa.regole.codiciAllerta = codiciAllerta;
+  window.TutorCasa.regole.CARICO = CARICO;
+
+  /* ================= Guida rapida: import dei testi (M2 · D46, D47, D48; la schermata L6 arriva in M3) ================= */
+  var SEZIONI_GUIDA = ['Chimica e additivi', 'Detersivi e temperature', 'Colori e acchiappacolore', 'Macchie', 'Sudore e odori', 'Preparare i capi', 'Capi speciali', 'Simboli delle etichette'];
+  var CODICI_REGOLE = [];
+  for (var iv = 1; iv <= 11; iv++) CODICI_REGOLE.push('V' + String(iv).padStart(2, '0'));
+  for (var ir = 1; ir <= 18; ir++) CODICI_REGOLE.push('R' + String(ir).padStart(2, '0'));
+  stato.guida = { voci: [], versione: null, fase: null, errori: [], esame: null };
+  function leggiGuida(voci, impostazioni) {
+    var v = (impostazioni || []).filter(function (x) { return x.chiave === 'guida_versione'; })[0];
+    stato.guida.voci = voci.slice().sort(function (a, b) { return Number(a.ID.slice(1)) - Number(b.ID.slice(1)); });
+    stato.guida.versione = v ? v.valore : null;
+  }
+  function controllaGuida(voci, nomeFile) {
+    var errori = [], visti = {}, standard = {};
+    stato.standard.elenco.forEach(function (x) { standard[x.ID] = 1; });
+    if (!voci.length) errori.push(nomeFile + ': non contiene nessuna voce.');
+    voci.forEach(function (g, i) {
+      var dove = nomeFile + ', riga ' + (i + 2) + ', colonna ';
+      if (!/^G\d{2,3}$/.test(g.ID)) errori.push(dove + 'ID: «' + g.ID + '» deve essere G seguito da un numero, come G01.');
+      else if (visti[g.ID]) errori.push(dove + 'ID: ' + g.ID + ' compare già alla riga ' + visti[g.ID] + '.');
+      else visti[g.ID] = i + 2;
+      if (SEZIONI_GUIDA.indexOf(g.Sezione) < 0) errori.push(dove + 'Sezione: «' + g.Sezione + '» non è una sezione della guida (' + SEZIONI_GUIDA.join(', ') + ').');
+      (g.Regole || []).forEach(function (c) {
+        if (CODICI_REGOLE.indexOf(c) >= 0) return;
+        if (/^[SO][1-9]\d?$/.test(c)) { if (!standard[c]) errori.push(dove + 'Regole: lo standard ' + c + ' non c’è nel database in uso' + (stato.standard.elenco.length ? '.' : ': importa prima gli standard.')); return; }
+        errori.push(dove + 'Regole: «' + c + '» non è un codice conosciuto (V01–V11, R01–R18 o l’ID di uno standard).');
+      });
+    });
+    return errori;
+  }
+  function esaminaGuida(file) {
+    var G = stato.guida; G.fase = 'lavoro'; G.errori = []; G.esame = null; ridisegna();
+    var v = /v(\d+\.\d+)/i.exec(file.name);
+    if (!v) { G.fase = 'errori'; G.errori = ['Nel nome del file manca la versione della guida, per esempio guida_rapida_v1.0.csv.']; ridisegna(); return; }
+    file.text().then(function (testo) {
+      var esito = controllaCSV({ file: file.name, chiave: null, colonne: SCHEMI.guida.colonne }, testo);
+      var errori = esito.errori.length ? esito.errori : controllaGuida(esito.dati, file.name);
+      G.esame = { versione: 'v' + v[1], nomeFile: file.name, dati: esito.dati };
+      G.errori = errori; G.fase = errori.length ? 'errori' : 'conferma'; ridisegna();
+    }).catch(function (e) { G.fase = 'errori'; G.errori = ['Il file non si legge: ' + (e.message || e)]; ridisegna(); });
+  }
+  function confermaGuida() {
+    var G = stato.guida, e = G.esame; if (!e || G.errori.length) return;
+    G.fase = 'lavoro'; ridisegna();
+    archivio.scriviInsieme({ guida: e.dati }, { impostazioni: [{ chiave: 'guida_versione', valore: e.versione }] }).then(function () {
+      G.fase = 'importato'; G.esame = null; return aggiornaArchivio();
+    }).catch(function (x) { G.fase = 'errori'; G.errori = ['La guida non è stata salvata e quella di prima non è cambiata: ' + (x.message || x)]; ridisegna(); });
+  }
+  function chiudiGuida() { var G = stato.guida; G.fase = null; G.esame = null; G.errori = []; ridisegna(); }
+  document.addEventListener('change', function (e) {
+    var input = e.target.closest('[data-file="guida"]');
+    if (input && input.files && input.files[0]) { esaminaGuida(input.files[0]); input.value = ''; }
+  });
+  function contaSezioni(voci) {
+    return SEZIONI_GUIDA.map(function (s) { return { nome: s, n: voci.filter(function (g) { return g.Sezione === s; }).length }; }).filter(function (x) { return x.n; });
+  }
+  function pannelloGuida() {
+    var G = stato.guida, c = '';
+    if (G.fase === 'lavoro') c = '<div class="allerta-blocco">' + segnala('info', 'Attendi', 'Sto controllando il file…') + '</div>';
+    if (G.fase === 'errori') {
+      var lista = G.errori.slice(0, 12).map(function (e) { return '<p>• ' + e + '</p>'; }).join('');
+      if (G.errori.length > 12) lista += '<p class="nota">E altri ' + (G.errori.length - 12) + ' errori.</p>';
+      c = '<div class="allerta-blocco">' + segnala('allerta', 'Rifiutato', G.errori.length === 1 ? 'Ho trovato 1 errore' : 'Ho trovato ' + G.errori.length + ' errori') +
+        lista + '<p class="nota">La guida attuale non è stata toccata.</p></div>' +
+        '<div class="fila"><button class="pulsante-secondario" type="button" data-azione="guida-chiudi">Chiudi</button></div>';
+    }
+    if (G.fase === 'conferma' && G.esame) {
+      var sez = contaSezioni(G.esame.dati);
+      c = '<div class="allerta-blocco">' + segnala('ok', 'Valido', G.esame.versione + ', ' + G.esame.dati.length + ' voci in ' + sez.length + ' sezioni') + '<p>' + G.esame.nomeFile + '</p>' +
+        (G.voci.length ? segnala('attenzione', 'Attenzione', 'Sostituisce la guida attuale (' + G.versione + ')') : '') + '</div>' +
+        '<div class="fila"><button class="pulsante-principale" type="button" data-azione="guida-conferma">Importa la guida ' + G.esame.versione + '</button>' +
+        '<button class="pulsante-secondario" type="button" data-azione="guida-chiudi">Annulla</button></div>';
+    }
+    if (G.fase === 'importato') {
+      c = '<div class="allerta-blocco">' + segnala('ok', 'Importata', 'Guida ' + G.versione + ': ' + G.voci.length + ' voci salvate sul tablet') + '</div>' +
+        '<div class="fila"><button class="pulsante-secondario" type="button" data-azione="guida-chiudi">Fatto</button></div>';
+    }
+    if (!G.fase) {
+      var stato_ = G.voci.length
+        ? '<div class="allerta-blocco">' + segnala('ok', 'Caricata', 'Guida ' + G.versione + ', ' + G.voci.length + ' voci') +
+            contaSezioni(G.voci).map(function (x) { return '<p>• ' + x.nome + ': ' + x.n + (x.n === 1 ? ' voce' : ' voci') + '</p>'; }).join('') + '</div>'
+        : '';
+      c = stato_ + '<p class="spiega">Il file guida_rapida_vX.Y.csv lo prepara Claude. Ogni voce ha un testo breve e una spiegazione; la schermata Guida rapida arriva in M3.</p>' +
+        '<div class="fila"><label class="' + (G.voci.length ? 'pulsante-secondario' : 'pulsante-principale') + '">' + (G.voci.length ? 'Importa una nuova versione' : 'Importa la guida') +
+        '<input type="file" accept=".csv,text/csv" data-file="guida" class="solo-lettori"></label></div>';
+    }
+    return '<section class="pannello"><h2>Guida rapida</h2>' + c + '</section>';
+  }
+  window.TutorCasa.guida = function () { return stato.guida; };
 
   /* ================= Vetrina componenti ================= */
   var PAROLE_VOTO = ['', 'Pessimo', 'Scarso', 'Discreto', 'Buono', 'Ottimo'];
@@ -1537,7 +1700,8 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
       '<a class="voce" href="#profilo"><span class="testi"><span class="codice">D1.2</span><span class="nome">Profilo lavatrice</span><span class="descrizione">' +
       (p.programmi.length ? p.macchina.Modello + ' · ' + p.programmi.length + ' programmi' : 'Nessun profilo: importalo da qui') + '</span></span>' + ICONE.avanti + '</a>' +
       '<a class="voce" href="#database"><span class="testi"><span class="codice">D1.3</span><span class="nome">Database standard</span><span class="descrizione">' +
-      (stato.standard.elenco.length ? (stato.standard.versione || 'Versione sconosciuta') + ' · ' + stato.standard.elenco.length + ' standard' : 'Nessuno standard: importali da qui') + '</span></span>' + ICONE.avanti + '</a></nav>';
+      (stato.standard.elenco.length ? (stato.standard.versione || 'Versione sconosciuta') + ' · ' + stato.standard.elenco.length + ' standard' : 'Nessuno standard: importali da qui') +
+      (stato.guida.voci.length ? ' · guida ' + stato.guida.versione : '') + '</span></span>' + ICONE.avanti + '</a></nav>';
   }
   function disegnaInfoHome() {
     var s = SCHERMATE['info-home'], c = stato.home.coppia.lavatrice, posto = stato.home.posto || 0, NOMI = ['Primo riquadro', 'Secondo riquadro'];
@@ -1755,6 +1919,8 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
     if (azione === 'profilo-chiudi') chiudiProfilo();
     if (azione === 'standard-conferma') confermaStandard();
     if (azione === 'standard-chiudi') chiudiStandard();
+    if (azione === 'guida-conferma') confermaGuida();
+    if (azione === 'guida-chiudi') chiudiGuida();
   });
 
   /* ================= Tema ================= */
