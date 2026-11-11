@@ -412,6 +412,109 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
   .codice-standard { width: 40px; height: 34px; font-size: 14px; }
   .codice-standard ~ .valori { padding-left: 52px; }
 }
+/* ---------- M3 · Hub Lavatrice (L0) ---------- */
+.hub { display: grid; gap: var(--space-6); grid-template-columns: minmax(0, 1fr); }
+.hub-stato { display: flex; align-items: center; gap: var(--space-8); }
+.hub-stato .manopola { width: 240px; height: 240px; }
+.hub-testi { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.hub-testi .etichetta { color: var(--ink-muted); font-size: 14px; display: flex; align-items: center; gap: 10px; }
+.titolo-stato { margin: 0; font-size: 30px; line-height: 34px; font-weight: 800; letter-spacing: -0.5px; }
+.hub-testi .segnalazione .frase { color: var(--ink-muted); }
+.hub-tessere { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.tessera-hub { min-height: 132px; }
+.tessera-hub .nome { font-size: 18px; line-height: 24px; font-weight: 800; }
+.tessera-hub .descrizione { font-size: 14px; line-height: 19px; color: var(--ink-muted); }
+.tessera-hub.attiva { transition: box-shadow 120ms ease, transform 120ms ease; }
+.tessera-hub.attiva:active { box-shadow: var(--shadow-scavato); transform: scale(0.99); }
+.tessera-hub .icona-piena { fill: var(--panel); }
+
+/* ---------- M3 · Guida rapida (L6) ---------- */
+.guida { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+.indice {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  margin: 0 calc(-1 * var(--margine)); padding: 12px var(--margine);
+  display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+  background: var(--ground); background: color-mix(in srgb, var(--ground) 84%, transparent);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+.indice::-webkit-scrollbar { display: none; }
+.indice .chip { flex: none; white-space: nowrap; }
+.indice .chip[aria-current="true"] { background: var(--topic); color: var(--topic-ink); font-weight: 800; box-shadow: var(--shadow-topic); }
+.sezioni-guida { display: flex; flex-direction: column; gap: var(--space-7); min-width: 0; }
+.sezione-guida { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 92px; }
+.sezione-guida .titolo-sezione { color: var(--ground-ink); }
+.voci-guida { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: var(--space-4); }
+.voce-guida {
+  display: flex; align-items: flex-start; gap: var(--space-3); padding: 18px 14px 18px 20px; border-radius: var(--radius-md);
+  background: var(--panel); color: var(--ink); box-shadow: var(--shadow-rilievo);
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation;
+  transition: box-shadow 120ms ease, transform 120ms ease;
+}
+.voce-guida.premuta { box-shadow: var(--shadow-scavato); transform: scale(0.99); }
+.voce-guida .testi { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
+.voce-guida .nome { margin: 0; font-size: 17px; line-height: 23px; font-weight: 800; }
+.voce-guida .breve { margin: 0; font-size: 15px; line-height: 21px; color: var(--ink-muted); }
+.tasto-spiega {
+  width: 48px; height: 48px; flex: none; margin-top: -6px; border: 0; border-radius: 50%; cursor: pointer;
+  background: var(--panel-inset); color: var(--ink); font-family: var(--font-tecnico); font-size: 20px; font-weight: 700;
+  box-shadow: inset 3px 3px 6px rgba(84,100,116,0.40), inset -3px -3px 6px rgba(255,255,255,0.70);
+}
+.tasto-spiega:active { background: var(--topic); color: var(--topic-ink); }
+.guida-piede { margin: 0; color: var(--ground-muted); }
+
+/* ---------- M3 · Foglio della spiegazione (D48) ---------- */
+.foglio {
+  position: fixed; inset: auto 0 0 0; margin: 0 auto; width: 100%; max-width: 100%; max-height: 92dvh;
+  padding: 0; border: 0; border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  background: var(--panel-hero); color: var(--ink); box-shadow: 0 -18px 48px rgba(0,0,0,0.45);
+  overflow: hidden; display: none; flex-direction: column;
+}
+.foglio[open] { display: flex; animation: foglio-su 380ms cubic-bezier(.2,.7,.2,1); }
+.foglio::backdrop { background: rgba(20,22,26,0.55); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+@keyframes foglio-su { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.foglio-maniglia { flex: none; width: 44px; height: 5px; margin: 12px auto 0; border-radius: 3px; background: rgba(27,34,40,0.22); }
+.foglio-corpo { overflow-y: auto; overscroll-behavior: contain; padding: 20px var(--space-8) 8px; display: flex; flex-direction: column; gap: 14px; }
+.foglio-corpo .etichetta { color: var(--ink-muted); }
+.foglio-titolo { margin: 0; font-size: 28px; line-height: 34px; font-weight: 800; letter-spacing: -0.5px; }
+.foglio-titolo:focus { outline: none; }
+.foglio-breve { margin: 0; font-size: 17px; line-height: 25px; font-weight: 700; }
+.foglio-punti { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; border-radius: var(--radius-lg); background: var(--panel-inset); box-shadow: var(--shadow-scavato); }
+.foglio-punti p { margin: 0; font-size: 17px; line-height: 25px; }
+.collegata { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 0; }
+.collegata .etichetta { margin-right: 4px; }
+.codice-regola { display: inline-flex; align-items: center; min-height: 30px; padding: 0 10px; border-radius: 10px; border: 1.5px solid rgba(27,34,40,0.35);
+  font-family: var(--font-tecnico); font-size: 14px; font-weight: 700; }
+.foglio-azioni { flex: none; padding: 14px var(--space-8) 22px; padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px)); display: flex; }
+.foglio-azioni .pulsante-principale { flex: 1; }
+html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
+
+@media (orientation: landscape) and (min-width: 900px) {
+  .hub { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: stretch; column-gap: 32px; }
+  .hub-stato { flex-direction: column; justify-content: center; align-items: stretch; gap: var(--space-6); padding: var(--space-7) var(--space-8); }
+  .hub-stato .manopola { width: 220px; height: 220px; align-self: center; }
+  .hub-tessere { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; }
+  .tessera-hub { min-height: 0; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--space-4); }
+  .guida { grid-template-columns: 236px minmax(0, 1fr); column-gap: 32px; }
+  .indice { top: calc(24px + env(safe-area-inset-top, 0px)); margin: 0; padding: 0; flex-direction: column; overflow: visible; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .indice .chip { width: 100%; text-align: left; white-space: normal; padding: 10px 18px; }
+  .sezione-guida { scroll-margin-top: 24px; }
+  .foglio { width: min(68vw, 780px); }
+}
+@media (max-width: 640px) {
+  .hub-stato { flex-direction: column; align-items: stretch; gap: var(--space-5); padding: var(--space-6); }
+  .hub-stato .manopola { width: 200px; height: 200px; align-self: center; }
+  .titolo-stato { font-size: 26px; line-height: 30px; }
+  .hub-tessere { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+  .tessera-hub { min-height: 124px; padding: 16px; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+  .tessera-hub .testi { min-width: 0; overflow-wrap: break-word; }
+  .tessera-hub { padding: 14px; }
+  .tessera-hub .nome { font-size: 16px; line-height: 21px; }
+  .voce-guida { padding: 16px 10px 16px 16px; }
+  .foglio-corpo { padding: 16px 20px 8px; }
+  .foglio-azioni { padding-left: 20px; padding-right: 20px; }
+  .foglio-titolo { font-size: 24px; line-height: 30px; }
+}
+
 /* ---------- Riduci movimento ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -426,6 +529,12 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
 </div>
 
 <main class="schermo" id="schermo"></main>
+
+<dialog class="foglio" id="foglio" aria-labelledby="foglio-titolo">
+  <div class="foglio-maniglia" aria-hidden="true"></div>
+  <div class="foglio-corpo" id="foglio-corpo"></div>
+  <div class="foglio-azioni"><button class="pulsante-principale" type="button" data-azione="foglio-chiudi">Chiudi</button></div>
+</dialog>
 
 <template id="modello-manopola">
   <svg class="manopola" aria-hidden="true" viewBox="0 0 300 300">
@@ -467,7 +576,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
 <script>
 (function () {
   'use strict';
-  var VERSIONE = '0.7.4';
+  var VERSIONE = '0.8.0';
   var $ = function (id) { return document.getElementById(id); };
 
   /* ================= Albero delle schermate (Documento, sezione 3) ================= */
@@ -807,7 +916,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
     }).then(function () {
       if (!navigator.storage || !navigator.storage.estimate) return;
       return navigator.storage.estimate().then(function (st) { stato.archivio.usatoKB = Math.round((st.usage || 0) / 1024); });
-    }).then(function () { if (attuale === 'dati' || attuale === 'home' || attuale === 'profilo' || attuale === 'database') ridisegna(); });
+    }).then(function () { if (['dati', 'home', 'profilo', 'database', 'lavatrice', 'guida'].indexOf(attuale) >= 0) ridisegna(); });
   }
   function chiediProtezione() {
     if (!navigator.storage || !navigator.storage.persisted) { stato.archivio.protetto = false; return Promise.resolve(); }
@@ -835,6 +944,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
       col('Foglietti_Acchiappacolore'), col('Capo_Tecnico', 'sino'), col('Checklist', 'lista'), col('Note_Speciali'), col('Da_Verificare', 'sino') ] },
     report: { file: 'registro_report_lavaggi.csv', chiave: 'ID_Report', colonne: [
       col('ID_Report', 'testo', 1), col('Data', 'data', 1), col('Ora_Avvio', 'ora'), col('ID_Lavaggio'), col('Versione_Standard'),
+      aggiunta(col('Modello_Macchina')), // P08, D49: dal 0.7.5; nei file più vecchi manca e resta vuota
       col('Allerta_Confermati', 'lista'), col('Capi_Lavati'), col('Carico_Reale'), col('Programma_Usato'), col('Temp_Reale', 'intero'),
       col('Giri_Reali', 'intero'), col('Detersivo_Tipo'), col('Detersivo_Dose'), col('Ammorb_Citrico_Usato'), col('Acchiappacolore_Usati', 'intero'),
       col('Opzioni', 'lista'), col('Durata_Min', 'intero'), col('Esito_Pulizia_Macchie', 'voto'), col('Esito_Morbidezza_Odore', 'voto'),
@@ -917,15 +1027,22 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
     }
   }
 
+  // Una colonna "aggiunta" è nata dopo: i file più vecchi possono non averla, e allora quel campo resta vuoto.
+  function aggiunta(c) { c.aggiunta = true; return c; }
   function controllaCSV(schema, testo) {
     var errori = [], dati = [], viste = {};
     var righe = leggiCSV(testo);
-    var attesa = schema.colonne.map(function (c) { return c.nome; });
+    var tutte = schema.colonne;
     if (!righe.length) return { errori: [schema.file + ': il file è vuoto.'], dati: [] };
     var testa = righe[0].map(function (x) { return x.trim(); });
-    if (testa.join(';') !== attesa.join(';')) {
-      return { errori: [schema.file + ', riga 1: le colonne non sono quelle previste. Servono, in quest’ordine: ' + attesa.join(';')], dati: [] };
+    var vecchie = tutte.filter(function (c) { return !c.aggiunta; });
+    var colonne = testa.join(';') === tutte.map(function (c) { return c.nome; }).join(';') ? tutte
+      : testa.join(';') === vecchie.map(function (c) { return c.nome; }).join(';') ? vecchie : null;
+    if (!colonne) {
+      return { errori: [schema.file + ', riga 1: le colonne non sono quelle previste. Servono, in quest’ordine: ' + tutte.map(function (c) { return c.nome; }).join(';')], dati: [] };
     }
+    var attesa = colonne.map(function (c) { return c.nome; });
+    schema = { file: schema.file, chiave: schema.chiave, colonne: colonne, mancanti: tutte.filter(function (c) { return colonne.indexOf(c) < 0; }) };
     righe.slice(1).forEach(function (r, i) {
       var n = i + 2, oggetto = {};
       if (r.length !== attesa.length) { errori.push(schema.file + ', riga ' + n + ': ha ' + r.length + ' colonne invece di ' + attesa.length + '.'); return; }
@@ -934,6 +1051,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
         if (esito.errore) errori.push(schema.file + ', riga ' + n + ', colonna ' + c.nome + ': ' + esito.errore + '.');
         else oggetto[c.campo] = esito.valore;
       });
+      schema.mancanti.forEach(function (c) { oggetto[c.campo] = daTesto('', c).valore; });
       if (schema.chiave && oggetto[schema.chiave] != null) {
         if (viste[oggetto[schema.chiave]]) errori.push(schema.file + ', riga ' + n + ': il codice ' + oggetto[schema.chiave] + ' compare già alla riga ' + viste[oggetto[schema.chiave]] + '.');
         else viste[oggetto[schema.chiave]] = n;
@@ -1120,6 +1238,9 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
     stato.profilo.programmi = programmi.slice().sort(ordineProgrammi);
   }
   window.TutorCasa_profilo = function () { return stato.profilo; };
+  // D49: il modello che ogni report salva in Modello_Macchina (lo userà L3 in M3)
+  function modelloAttuale() { return stato.profilo.macchina.Modello || ''; }
+  window.TutorCasa_modello = modelloAttuale;
 
   // Controlla che il profilo sia coerente con sé stesso. Gli errori citano file, riga e colonna.
   function controllaProfilo(righeMacchina, programmi, fileM, fileP) {
@@ -1547,7 +1668,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
   window.TutorCasa.regole.codiciAllerta = codiciAllerta;
   window.TutorCasa.regole.CARICO = CARICO;
 
-  /* ================= Guida rapida: import dei testi (M2 · D46, D47, D48; la schermata L6 arriva in M3) ================= */
+  /* ================= Guida rapida: import dei testi (M2 · D46, D47, D48; la schermata L6 è in M3) ================= */
   var SEZIONI_GUIDA = ['Chimica e additivi', 'Detersivi e temperature', 'Colori e acchiappacolore', 'Macchie', 'Sudore e odori', 'Preparare i capi', 'Capi speciali', 'Simboli delle etichette'];
   var CODICI_REGOLE = [];
   for (var iv = 1; iv <= 11; iv++) CODICI_REGOLE.push('V' + String(iv).padStart(2, '0'));
@@ -1628,13 +1749,182 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
         ? '<div class="allerta-blocco">' + segnala('ok', 'Caricata', 'Guida ' + G.versione + ', ' + G.voci.length + ' voci') +
             contaSezioni(G.voci).map(function (x) { return '<p>• ' + x.nome + ': ' + x.n + (x.n === 1 ? ' voce' : ' voci') + '</p>'; }).join('') + '</div>'
         : '';
-      c = stato_ + '<p class="spiega">Il file guida_rapida_vX.Y.csv lo prepara Claude. Ogni voce ha un testo breve e una spiegazione; la schermata Guida rapida arriva in M3.</p>' +
+      c = stato_ + '<p class="spiega">Il file guida_rapida_vX.Y.csv lo prepara Claude. Ogni voce ha un testo breve e una spiegazione; la leggi in Lavatrice, Guida rapida.</p>' +
         '<div class="fila"><label class="' + (G.voci.length ? 'pulsante-secondario' : 'pulsante-principale') + '">' + (G.voci.length ? 'Importa una nuova versione' : 'Importa la guida') +
         '<input type="file" accept=".csv,text/csv" data-file="guida" class="solo-lettori"></label></div>';
     }
     return '<section class="pannello"><h2>Guida rapida</h2>' + c + '</section>';
   }
   window.TutorCasa.guida = function () { return stato.guida; };
+
+  // Testi che arrivano dai CSV: mai interpretati come codice della pagina
+  function esc(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  // La pagina scorre dentro <body> (non nella finestra): ogni schermata nuova riparte dall'alto
+  function contenitoreScorrimento() { var b = document.body; return b.scrollHeight > b.clientHeight + 1 ? b : document.scrollingElement; }
+  function inCima() { document.body.scrollTop = 0; window.scrollTo(0, 0); }
+  function riduciMovimento() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+
+  /* ================= M3 · Hub Lavatrice (L0) ================= */
+  function icona(tracce) {
+    return '<svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + tracce + '</svg>';
+  }
+  var ICONE_HUB = {
+    'lavaggi-standard': icona('<path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path><path d="M4 6h1"></path><path d="M4 12h1"></path><path d="M4 18h1"></path>'),
+    'su-misura': icona('<path d="M6 4v16"></path><path d="M12 4v16"></path><path d="M18 4v16"></path><circle class="icona-piena" cx="6" cy="9" r="2.2"></circle><circle class="icona-piena" cx="12" cy="15" r="2.2"></circle><circle class="icona-piena" cx="18" cy="8" r="2.2"></circle>'),
+    guida: icona('<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"></path><path d="M4 20.5A2.5 2.5 0 0 0 6.5 21H20"></path><path d="M9 8h7"></path>'),
+    report: icona('<rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 3.5h6"></path><path d="M9 10h6"></path><path d="M9 14h6"></path><path d="M9 18h3"></path>'),
+    registro: icona('<path d="M4 20h16"></path><path d="M7 16v-5"></path><path d="M12 16V7"></path><path d="M17 16v-8"></path>'),
+    manutenzione: icona('<path d="M15 4a5 5 0 0 0-4.6 6.9L4 17.3V20h2.7l6.4-6.4A5 5 0 0 0 20 9l-3 1-2-2 1-3z"></path>')
+  };
+  // Prima le funzioni già pronte, poi quelle che arrivano più avanti (schizzo approvato)
+  var ORDINE_HUB = ['lavaggi-standard', 'su-misura', 'guida', 'report', 'registro', 'manutenzione'];
+  function descrizioneHub(id) {
+    if (id === 'lavaggi-standard') { var n = stato.standard.elenco.length; return n ? n + ' lavaggi pronti, settimanali e occasionali' : 'Importa prima i lavaggi standard'; }
+    if (id === 'su-misura') return 'Componi il carico e scegli il programma';
+    if (id === 'guida') { var g = stato.guida.voci.length; return g ? g + ' consigli in ' + contaSezioni(stato.guida.voci).length + ' sezioni' : 'Importa prima la guida'; }
+    return SCHERMATE[id].testo;
+  }
+  function tesseraHub(id) {
+    var s = SCHERMATE[id];
+    if (s.arriva !== 'M3') return '<button class="tessera tessera-hub" type="button" disabled data-hub="' + id + '">' + ICONE_HUB[id] +
+      '<span class="testi"><span class="nome">' + s.titolo + '</span><span class="etichetta">Arriva in ' + s.arriva + '</span></span></button>';
+    return '<a class="tessera tessera-hub attiva" href="#' + id + '" data-hub="' + id + '">' + ICONE_HUB[id] +
+      '<span class="testi"><span class="nome">' + s.titolo + '</span><span class="descrizione">' + descrizioneHub(id) + '</span></span></a>';
+  }
+  function statoStandardHub() {
+    var S = stato.standard, righe = [];
+    if (!stato.profilo.programmi.length) righe.push(segnala('attenzione', 'Da importare', 'Profilo della lavatrice, da Dati e impostazioni'));
+    if (!S.elenco.length) righe.push(segnala('attenzione', 'Da importare', 'Lavaggi standard, da Dati e impostazioni'));
+    else { var n = standardDaRivedere(); righe.push(segnala(n ? 'attenzione' : 'ok', n ? 'Avvisi' : 'In regola', 'Standard ' + (S.versione || '') + ', ' + S.elenco.length + ' lavaggi' + (n ? ', ' + n + ' da rivedere' : ''))); }
+    return righe.join('');
+  }
+  function disegnaHub() {
+    var s = SCHERMATE.lavatrice;
+    var hero = '<section class="pannello-hero hub-stato" aria-labelledby="titolo-stato">' + $('modello-manopola').innerHTML +
+      '<div class="hub-testi"><p class="etichetta"><span class="led" aria-hidden="true"></span>Stato</p>' +
+        '<h2 class="titolo-stato" id="titolo-stato">Nessun lavaggio in corso</h2>' +
+        '<p class="frase-hero">Quando avvii un lavaggio, lo trovi qui.</p>' + statoStandardHub() +
+        '<div class="azioni-hero"><button class="pulsante-secondario" type="button" disabled title="In arrivo">Nuovo lavaggio</button></div>' +
+      '</div></section>';
+    return '<div class="interna">' + intestazione(s) +
+      '<div class="hub">' + hero + '<nav class="hub-tessere" aria-label="Funzioni della lavatrice">' + ORDINE_HUB.map(tesseraHub).join('') + '</nav></div></div>';
+  }
+
+  /* ================= M3 · Guida rapida (L6, D47, D48) ================= */
+  function voceGuida(g) {
+    return '<article class="voce-guida" data-voce-guida="' + esc(g.ID) + '"><div class="testi"><h3 class="nome">' + esc(g.Titolo) + '</h3><p class="breve">' + esc(g.Breve) + '</p></div>' +
+      '<button class="tasto-spiega" type="button" data-spiega="' + esc(g.ID) + '" aria-haspopup="dialog" aria-label="Spiegazione: ' + esc(g.Titolo) + '">?</button></article>';
+  }
+  function disegnaGuida() {
+    var s = SCHERMATE.guida, G = stato.guida;
+    if (!G.voci.length) return '<div class="interna">' + intestazione(s) +
+      '<div class="riquadro vuota"><p class="etichetta">Nessuna guida</p><p class="titolo-riquadro">La guida non è ancora sul tablet</p>' +
+        segnala('attenzione', 'Da importare', 'Il file guida_rapida_vX.Y.csv si importa da Database standard') +
+        '<a class="pulsante-principale" href="#database">Apri Database standard</a></div></div>';
+    var sez = contaSezioni(G.voci);
+    var indice = '<nav class="indice" aria-label="Sezioni della guida">' + sez.map(function (x, i) {
+      return '<button class="chip" type="button" data-sezione="' + i + '" aria-current="' + (i === 0) + '">' + x.nome + '</button>';
+    }).join('') + '</nav>';
+    var sezioni = sez.map(function (x, i) {
+      return '<section class="sezione-guida" id="sezione-guida-' + i + '" data-sezione-guida="' + i + '" aria-labelledby="titolo-sez-' + i + '">' +
+        '<h2 class="titolo-sezione" id="titolo-sez-' + i + '" tabindex="-1">' + x.nome + '</h2><div class="voci-guida">' +
+        G.voci.filter(function (g) { return g.Sezione === x.nome; }).map(voceGuida).join('') + '</div></section>';
+    }).join('');
+    return '<div class="interna">' + intestazione(s) +
+      '<div class="guida">' + indice + '<div class="sezioni-guida">' + sezioni +
+        '<p class="etichetta guida-piede">Guida ' + esc(G.versione || '') + ', ' + G.voci.length + ' voci. Tocca ? o tieni premuta una voce per la spiegazione.</p></div></div></div>';
+  }
+  // L'indice segue la lettura: si accende la sezione in cima allo schermo
+  var indiceFisso = null;
+  function segnaChip(i) {
+    var nav = document.querySelector('.indice'); if (!nav) return;
+    Array.prototype.forEach.call(nav.querySelectorAll('[data-sezione]'), function (c) {
+      var on = Number(c.dataset.sezione) === i; c.setAttribute('aria-current', String(on));
+      if (on && nav.scrollWidth > nav.clientWidth + 2) nav.scrollTo({ left: Math.max(0, c.offsetLeft - nav.clientWidth / 2 + c.offsetWidth / 2), behavior: riduciMovimento() ? 'auto' : 'smooth' });
+    });
+  }
+  function aggiornaIndice() {
+    if (attuale !== 'guida' || indiceFisso !== null) return;
+    var sez = document.querySelectorAll('[data-sezione-guida]'); if (!sez.length) return;
+    var nav = document.querySelector('.indice'), sopra = nav && nav.getBoundingClientRect().height < 120 ? nav.getBoundingClientRect().bottom + 24 : 80, attiva = 0;
+    Array.prototype.forEach.call(sez, function (s, i) { if (s.getBoundingClientRect().top <= sopra) attiva = i; });
+    var sc = contenitoreScorrimento(); if (sc.scrollTop > 0 && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 4) attiva = sez.length - 1;
+    var attuali = document.querySelector('.indice [aria-current="true"]');
+    if (!attuali || Number(attuali.dataset.sezione) !== attiva) segnaChip(attiva);
+  }
+  document.addEventListener('scroll', aggiornaIndice, { passive: true, capture: true });
+  ['wheel', 'touchstart', 'keydown'].forEach(function (t) { window.addEventListener(t, function () { if (indiceFisso !== null) { indiceFisso = null; } }, { passive: true }); });
+  function vaiASezione(i) {
+    var s = document.getElementById('sezione-guida-' + i); if (!s) return;
+    indiceFisso = i; segnaChip(i);
+    s.scrollIntoView({ behavior: riduciMovimento() ? 'auto' : 'smooth', block: 'start' });
+    var h = s.querySelector('h2'); if (h) h.focus({ preventScroll: true });
+  }
+
+  /* ================= M3 · Foglio della spiegazione (D48) ================= */
+  // Componente comune: oggi per le voci della guida, dalla 0.8.3 anche per gli allerta del carico.
+  var foglio = { apertoIl: 0, ritorno: null };
+  function apriFoglio(c, da) {
+    var d = $('foglio');
+    $('foglio-corpo').innerHTML = (c.etichetta ? '<p class="etichetta">' + esc(c.etichetta) + '</p>' : '') +
+      '<h2 class="foglio-titolo" id="foglio-titolo" tabindex="-1">' + esc(c.titolo) + '</h2>' +
+      (c.breve ? '<p class="foglio-breve">' + esc(c.breve) + '</p>' : '') +
+      ((c.punti || []).length ? '<div class="foglio-punti">' + c.punti.map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') + '</div>' : '') +
+      ((c.codici || []).length ? '<p class="collegata"><span class="etichetta">Collegata a</span>' + c.codici.map(function (x) { return '<span class="codice-regola">' + esc(x) + '</span>'; }).join('') + '</p>' : '');
+    $('foglio-corpo').scrollTop = 0;
+    foglio.ritorno = da || document.activeElement;
+    if (!d.open) {
+      d.showModal(); foglio.apertoIl = Date.now();
+      document.documentElement.classList.add('foglio-aperto');
+      history.pushState({ foglio: true }, '', location.hash); // così il gesto indietro chiude solo il foglio
+    }
+    $('foglio-titolo').focus({ preventScroll: true });
+  }
+  function nascondiFoglio() {
+    var d = $('foglio'); if (!d.open) return;
+    d.close(); document.documentElement.classList.remove('foglio-aperto');
+    var r = foglio.ritorno; foglio.ritorno = null;
+    if (r && document.contains(r)) r.focus({ preventScroll: true });
+  }
+  function chiudiFoglio() {
+    if (!$('foglio').open) return;
+    if (history.state && history.state.foglio) history.back(); else nascondiFoglio();
+  }
+  window.addEventListener('popstate', function () { if (!(history.state && history.state.foglio)) nascondiFoglio(); });
+  function apriVoceGuida(idVoce, da) {
+    var g = stato.guida.voci.filter(function (x) { return x.ID === idVoce; })[0]; if (!g) return;
+    apriFoglio({ etichetta: g.Sezione, titolo: g.Titolo, breve: g.Breve, punti: g.Spiegazione || [], codici: g.Regole || [] }, da);
+  }
+  window.TutorCasa.foglio = { apri: apriFoglio, chiudi: chiudiFoglio };
+  // Pressione lunga su una voce (D48): 550 ms fermi sulla voce aprono la spiegazione
+  var pressione = null;
+  function annullaPressione() { if (!pressione) return; clearTimeout(pressione.timer); pressione.v.classList.remove('premuta'); pressione = null; }
+  document.addEventListener('pointerdown', function (e) {
+    var v = e.target.closest('[data-voce-guida]');
+    if (!v || e.target.closest('button') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    annullaPressione(); v.classList.add('premuta');
+    pressione = { v: v, id: e.pointerId, x: e.clientX, y: e.clientY, timer: setTimeout(function () {
+      var voce = v; annullaPressione(); apriVoceGuida(voce.dataset.voceGuida, voce.querySelector('[data-spiega]'));
+    }, 550) };
+  });
+  document.addEventListener('pointermove', function (e) { if (pressione && e.pointerId === pressione.id && Math.hypot(e.clientX - pressione.x, e.clientY - pressione.y) > 10) annullaPressione(); });
+  document.addEventListener('pointerup', annullaPressione);
+  document.addEventListener('pointercancel', annullaPressione);
+  document.addEventListener('scroll', annullaPressione, { passive: true, capture: true });
+  document.addEventListener('contextmenu', function (e) { if (e.target.closest('[data-voce-guida]')) e.preventDefault(); });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-spiega]');
+    if (b) { apriVoceGuida(b.dataset.spiega, b); return; }
+    var c = e.target.closest('[data-sezione]');
+    if (c) { vaiASezione(Number(c.dataset.sezione)); return; }
+    // Un tocco fuori dal foglio (sullo sfondo scuro) lo chiude; non appena aperto, il dito che si alza non conta
+    var d = $('foglio');
+    if (d.open && e.target === d && Date.now() - foglio.apertoIl > 400) {
+      var r = d.getBoundingClientRect();
+      if (e.clientY < r.top || e.clientY > r.bottom || e.clientX < r.left || e.clientX > r.right) chiudiFoglio();
+    }
+  });
+  $('foglio').addEventListener('cancel', function (e) { e.preventDefault(); chiudiFoglio(); });
 
   /* ================= Vetrina componenti ================= */
   var PAROLE_VOTO = ['', 'Pessimo', 'Scarso', 'Discreto', 'Buono', 'Ottimo'];
@@ -1803,10 +2093,11 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
     var schermo = $('schermo');
     if (id === 'home' && direzione) stato.home.pagina.info = 0;
     if (id === 'info-home' && direzione) stato.home.posto = 0;
-    schermo.innerHTML = id === 'home' ? disegnaHome() : id === 'dati' ? disegnaDati() : id === 'vetrina' ? disegnaVetrina() : id === 'info-home' ? disegnaInfoHome() : id === 'profilo' ? disegnaProfilo() : id === 'database' ? disegnaDatabase() : disegnaInterna(id);
+    if (direzione) nascondiFoglio();
+    schermo.innerHTML = id === 'home' ? disegnaHome() : id === 'lavatrice' ? disegnaHub() : id === 'guida' ? disegnaGuida() : id === 'dati' ? disegnaDati() : id === 'vetrina' ? disegnaVetrina() : id === 'info-home' ? disegnaInfoHome() : id === 'profilo' ? disegnaProfilo() : id === 'database' ? disegnaDatabase() : disegnaInterna(id);
     schermo.className = 'schermo ' + direzione;
     document.title = id === 'home' ? 'Tutor Casa' : SCHERMATE[id].titolo + ' · Tutor Casa';
-    if (direzione !== 'apertura') { window.scrollTo(0, 0); var h = schermo.querySelector('h1'); if (h) h.focus({ preventScroll: true }); }
+    if (direzione !== 'apertura') { inCima(); var h = schermo.querySelector('h1'); if (h) h.focus({ preventScroll: true }); }
   }
   function ridisegna() { disegna(attuale, ''); }
 
@@ -1921,6 +2212,7 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
     if (azione === 'standard-chiudi') chiudiStandard();
     if (azione === 'guida-conferma') confermaGuida();
     if (azione === 'guida-chiudi') chiudiGuida();
+    if (azione === 'foglio-chiudi') chiudiFoglio();
   });
 
   /* ================= Tema ================= */
