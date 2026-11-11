@@ -1,7 +1,7 @@
 /* Tutor Casa · copia dell'app sul tablet per funzionare senza connessione.
    A ogni nuova versione cambia VERSIONE: il tablet scarica la nuova copia
    la prima volta che apri l'app con la connessione. I tuoi dati non vengono toccati. */
-const VERSIONE = 'tutor-casa-0.7.0';
+const VERSIONE = 'tutor-casa-0.7.1';
 const FILE_APP = [
   './',
   './index.html',
