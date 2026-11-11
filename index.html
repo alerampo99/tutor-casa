@@ -386,6 +386,25 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
   .manopola { width: 240px; height: 240px; }
 }
 
+/* Profilo lavatrice (D1.2): righe dei programmi, da leggere */
+.programmi { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr)); gap: var(--space-3); }
+.programma { display: flex; align-items: center; gap: var(--space-4); min-height: 64px; padding: 12px 18px; border-radius: 18px; background: var(--panel-inset); color: var(--ink);
+  box-shadow: inset 3px 3px 6px rgba(84,100,116,0.40), inset -3px -3px 6px rgba(255,255,255,0.70); }
+.numero-programma { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1.5px solid rgba(27,34,40,0.35);
+  font-family: var(--font-tecnico); font-size: 17px; font-weight: 700; }
+.programma .testi { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.programma .nome { font-size: 16px; line-height: 22px; font-weight: 800; }
+.programma .descrizione, .programma .nota { font-size: 14px; line-height: 19px; color: var(--ink-muted); overflow-wrap: anywhere; }
+.programma .nota { font-weight: 600; }
+.programma .valori { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 1px; font-family: var(--font-tecnico); font-size: 14px; line-height: 19px; font-weight: 600; text-align: right; }
+h3.gruppo-titolo { margin: var(--space-2) 0 0; }
+@media (max-width: 640px) {
+  .programma { flex-wrap: wrap; align-items: flex-start; gap: 6px 12px; padding: 12px 14px; }
+  .numero-programma { width: 34px; height: 34px; font-size: 15px; }
+  .programma .testi { flex-basis: calc(100% - 46px); }
+  .programma .valori { flex-basis: 100%; flex-direction: row; flex-wrap: wrap; justify-content: flex-start; align-items: center; column-gap: 12px; padding-left: 46px; text-align: left; }
+}
+
 /* ---------- Riduci movimento ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -441,7 +460,7 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
 <script>
 (function () {
   'use strict';
-  var VERSIONE = '0.6.1';
+  var VERSIONE = '0.7.0';
   var $ = function (id) { return document.getElementById(id); };
 
   /* ================= Albero delle schermate (Documento, sezione 3) ================= */
@@ -466,6 +485,7 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
     dispensa:           { codice: 'C3',   titolo: 'Dispensa e frigo',       genitore: 'home',             arriva: 'M8', testo: 'Attività settimanali e occasionali, con checklist.' },
     dati:               { codice: 'D1',   titolo: 'Dati e impostazioni',    genitore: 'home',             arriva: 'M0', testo: 'Import ed export di tutti i CSV, backup e tema.' },
     'info-home':        { codice: 'D1.1', titolo: 'Info della Home',        genitore: 'dati',             arriva: 'M1', testo: 'Scegli le due info che vedi appena apri l’app.' },
+    profilo:            { codice: 'D1.2', titolo: 'Profilo lavatrice',      genitore: 'dati',             arriva: 'M2', testo: 'Modello, programmi e limiti della tua lavatrice.' },
     vetrina:            { codice: 'M0',   titolo: 'Vetrina componenti',     genitore: 'dati',             arriva: 'M0', testo: 'Tutti i componenti dell’app, da provare. Pagina provvisoria.' }
   };
 
@@ -655,7 +675,7 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
         '<div class="riquadro"><p class="etichetta">Tema</p><p class="titolo-riquadro">' + NOMI_TEMA[temaAttuale()] + '</p>' +
           '<button class="pulsante-principale" type="button" data-azione="tema">Cambia tema</button></div>' +
       '</div>' +
-      voceInfoHome() + pannelloArchivio() + pannelloBackup() +
+      vociImpostazioni() + pannelloArchivio() + pannelloBackup() +
       '<nav class="voci" aria-label="Strumenti di prova"><a class="voce" href="#vetrina"><span class="testi"><span class="codice">M0</span>' +
         '<span class="nome">Vetrina componenti</span><span class="descrizione">Pulsanti, chip, tag, voti e allerta da provare.</span></span>' + ICONE.avanti + '</a></nav>' +
       '<p class="etichetta piede">Versione ' + VERSIONE + '</p>' +
@@ -667,7 +687,7 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
   /* ================= Archivio dati sul tablet (IndexedDB) ================= */
   // Un cassetto per ogni tipo di dato, come i file CSV del Documento (sezione 5).
   var archivio = (function () {
-    var NOME = 'tutor-casa', VERSIONE_ARCHIVIO = 1, db = null;
+    var NOME = 'tutor-casa', VERSIONE_ARCHIVIO = 2, db = null;
     var CASSETTI = {
       impostazioni:      { keyPath: 'chiave' },
       standard:          { keyPath: 'ID' },
@@ -675,7 +695,10 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
       report:            { keyPath: 'ID_Report' },
       attivita:          { keyPath: 'ID' },
       registro_attivita: { keyPath: 'ID_Registro' },
-      prove:             { keyPath: 'id', autoIncrement: true }
+      prove:             { keyPath: 'id', autoIncrement: true },
+      // Da M2 (D25): il profilo della lavatrice, importato da profilo_lavatrice.zip
+      profilo_macchina:  { keyPath: 'Chiave' },
+      profilo_programmi: { keyPath: 'Programma' }
     };
     function apri() {
       if (db) return Promise.resolve(db);
@@ -735,7 +758,8 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
   window.TutorCasa = { archivio: archivio }; // utile per i controlli
   stato.archivio = { pronto: false, errore: null, protetto: null, usatoKB: null, prove: [], report: 0 };
   function aggiornaArchivio() {
-    return Promise.all([archivio.tutti('prove'), archivio.conta('report'), archivio.tutti('impostazioni')]).then(function (r) {
+    return Promise.all([archivio.tutti('prove'), archivio.conta('report'), archivio.tutti('impostazioni'), archivio.tutti('profilo_macchina'), archivio.tutti('profilo_programmi')]).then(function (r) {
+      leggiProfilo(r[3], r[4]);
       stato.archivio.pronto = true; stato.archivio.errore = null;
       var imp = {}; r[2].forEach(function (x) { imp[x.chiave] = x.valore; });
       stato.archivio.ultimoBackup = imp.ultimo_backup || null;
@@ -747,7 +771,7 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
     }).then(function () {
       if (!navigator.storage || !navigator.storage.estimate) return;
       return navigator.storage.estimate().then(function (st) { stato.archivio.usatoKB = Math.round((st.usage || 0) / 1024); });
-    }).then(function () { if (attuale === 'dati' || attuale === 'home') ridisegna(); });
+    }).then(function () { if (attuale === 'dati' || attuale === 'home' || attuale === 'profilo') ridisegna(); });
   }
   function chiediProtezione() {
     if (!navigator.storage || !navigator.storage.persisted) { stato.archivio.protetto = false; return Promise.resolve(); }
@@ -785,7 +809,13 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
     registro_attivita: { file: 'registro_attivita.csv', chiave: 'ID_Registro', colonne: [
       col('ID_Registro', 'testo', 1), col('Data', 'data', 1), col('ID_Attivita'), col('Esito'), col('Durata_Min', 'intero'), col('Note') ] },
     impostazioni: { file: 'impostazioni.csv', chiave: 'chiave', colonne: [ col('Chiave', 'testo', 1, 'chiave'), col('Valore', 'testo', 0, 'valore') ] },
-    prove: { file: 'prove_m0.csv', chiave: null, facoltativo: true, colonne: [ col('Numero', 'intero', 1, 'numero'), col('Creato', 'testo', 1, 'creato') ] }
+    prove: { file: 'prove_m0.csv', chiave: null, facoltativo: true, colonne: [ col('Numero', 'intero', 1, 'numero'), col('Creato', 'testo', 1, 'creato') ] },
+    // Profilo macchina (D25, D39): nel backup due CSV; nel file da importare macchina.csv e programmi.csv
+    profilo_macchina: { file: 'profilo_macchina.csv', fileProfilo: 'macchina.csv', chiave: 'Chiave', facoltativo: true, colonne: [ col('Chiave', 'testo', 1), col('Valore') ] },
+    profilo_programmi: { file: 'profilo_programmi.csv', fileProfilo: 'programmi.csv', chiave: 'Programma', facoltativo: true, colonne: [
+      col('Programma', 'testo', 1), col('Nome', 'testo', 1), col('Gruppo', 'testo', 1), col('Descrizione'), col('Temp_Std', 'intero'), col('Temp_Max', 'intero'),
+      col('Giri_Max', 'intero', 1), col('Carico_Max_Kg', 'decimale'), col('Carico_Max_Paia', 'intero'), col('Durata_Min', 'intero', 1),
+      col('Prelavaggio', 'sino', 1), col('Ammorbidente', 'sino', 1), col('Opzioni_Escluse', 'lista'), col('Note') ] }
   };
 
   function campoCSV(v) {
@@ -796,6 +826,7 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
     if (valore == null || valore === '') return '';
     if (tipo === 'lista') return (Array.isArray(valore) ? valore : [valore]).join(' | ');
     if (tipo === 'sino') return valore === true || valore === 'Sì' ? 'Sì' : 'No';
+    if (tipo === 'decimale') return String(valore).replace('.', ',');
     return String(valore);
   }
   function scriviCSV(schema, righe) {
@@ -829,6 +860,7 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
     if (t === '') return c.obbligatoria ? { errore: 'è vuota, ma è obbligatoria' } : { valore: c.tipo === 'lista' ? [] : null };
     switch (c.tipo) {
       case 'intero': return /^-?\d+$/.test(t) ? { valore: Number(t) } : { errore: '«' + t + '» non è un numero intero' };
+      case 'decimale': return /^\d+([.,]\d+)?$/.test(t) ? { valore: Number(t.replace(',', '.')) } : { errore: '«' + t + '» non è un numero (per i decimali usa la virgola, es. 1,5)' };
       case 'voto': return /^[1-5]$/.test(t) ? { valore: Number(t) } : { errore: '«' + t + '» non è un voto da 1 a 5' };
       case 'data':
         var d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t), ok = d && new Date(t + 'T00:00:00Z').toISOString().slice(0, 10) === t;
@@ -880,12 +912,13 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
       nomi.forEach(function (n, i) {
         var righe = tutti[i];
         if (n === 'prove') righe = righe.sort(function (a, b) { return a.id - b.id; });
+        if (n === 'profilo_programmi') righe = righe.sort(ordineProgrammi);
         // La data di questo backup viaggia dentro il backup: dopo un ripristino resta corretta.
         if (n === 'impostazioni') righe = righe.filter(function (r) { return r.chiave !== 'ultimo_backup'; }).concat([{ chiave: 'ultimo_backup', valore: momento }]);
         conteggi[n] = righe.length;
         zip.file(SCHEMI[n].file, scriviCSV(SCHEMI[n], righe));
       });
-      var info = [['App', 'Tutor Casa'], ['Versione_App', VERSIONE], ['Formato_Backup', '1'], ['Data_Backup', oggiISO()],
+      var info = [['App', 'Tutor Casa'], ['Versione_App', VERSIONE], ['Formato_Backup', '2'], ['Data_Backup', oggiISO()],
                   ['Ora_Backup', new Date().toTimeString().slice(0, 5)]];
       zip.file(NOME_INFO, '\ufeffChiave;Valore\r\n' + info.map(function (r) { return r.map(campoCSV).join(';'); }).join('\r\n') + '\r\n');
       return zip.generateAsync({ type: 'blob', compression: 'DEFLATE', mimeType: 'application/zip' }).then(function (blob) {
@@ -922,6 +955,9 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
           var esito = controllaCSV(SCHEMI[n], testo);
           errori = errori.concat(esito.errori); dati[n] = esito.dati;
         });
+        if (!errori.length && (dati.profilo_macchina.length || dati.profilo_programmi.length)) {
+          errori = controllaProfilo(dati.profilo_macchina, dati.profilo_programmi, SCHEMI.profilo_macchina.file, SCHEMI.profilo_programmi.file);
+        }
         return { errori: errori, dati: dati, info: info, nomeFile: file.name };
       });
     });
@@ -976,7 +1012,7 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
   }
   function chiudiBackup() { stato.backup.fase = null; stato.backup.esame = null; stato.backup.errori = []; ridisegna(); }
 
-  var NOMI_CASSETTI = { standard: 'lavaggi standard', report: 'report', attivita: 'attività', registro_attivita: 'attività registrate', impostazioni: 'impostazioni', prove: 'dati di prova' };
+  var NOMI_CASSETTI = { standard: 'lavaggi standard', report: 'report', attivita: 'attività', registro_attivita: 'attività registrate', impostazioni: 'impostazioni', prove: 'dati di prova', profilo_macchina: 'dati della macchina', profilo_programmi: 'programmi del profilo' };
   function riepilogo(dati) {
     return Object.keys(SCHEMI).map(function (n) { return dati[n].length + ' ' + NOMI_CASSETTI[n]; }).join(', ');
   }
@@ -1024,6 +1060,164 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
     var input = e.target.closest('[data-file="backup"]');
     if (input && input.files && input.files[0]) esaminaBackup(input.files[0]);
   });
+
+  /* ================= Profilo macchina (M2 · D25, D38, D39) ================= */
+  // I limiti della lavatrice si leggono da qui, non da valori fissi nel codice.
+  var CHIAVI_MACCHINA = { Marca: 1, Modello: 1, Codice: 0, Numero_Serie: 0, Capacita_Kg: 1, Temperature: 1, Giri: 1, Opzioni: 1, Versione_Profilo: 1, Fonte: 1 };
+  stato.profilo = { macchina: {}, programmi: [], fase: null, errori: [], esame: null };
+
+  function ordineProgrammi(a, b) {
+    function peso(p) { return /^\d+$/.test(p.Programma) ? Number(p.Programma) : p.Programma === 'R' ? 100 : 101; }
+    return peso(a) - peso(b);
+  }
+  function listaNumeri(testo) { return String(testo || '').split('|').map(function (x) { return x.trim(); }).filter(Boolean); }
+  function leggiProfilo(righeMacchina, programmi) {
+    var m = {}; righeMacchina.forEach(function (r) { m[r.Chiave] = r.Valore; });
+    stato.profilo.macchina = m;
+    stato.profilo.programmi = programmi.slice().sort(ordineProgrammi);
+  }
+  window.TutorCasa_profilo = function () { return stato.profilo; };
+
+  // Controlla che il profilo sia coerente con sé stesso. Gli errori citano file, riga e colonna.
+  function controllaProfilo(righeMacchina, programmi, fileM, fileP) {
+    var errori = [], m = {}, righe = {};
+    righeMacchina.forEach(function (r, i) {
+      if (!(r.Chiave in CHIAVI_MACCHINA)) errori.push(fileM + ', riga ' + (i + 2) + ': la voce «' + r.Chiave + '» non è prevista. Voci ammesse: ' + Object.keys(CHIAVI_MACCHINA).join(', ') + '.');
+      m[r.Chiave] = (r.Valore || '').trim(); righe[r.Chiave] = i + 2;
+    });
+    Object.keys(CHIAVI_MACCHINA).forEach(function (k) {
+      if (CHIAVI_MACCHINA[k] && !m[k]) errori.push(fileM + ': manca la voce ' + k + ', che è obbligatoria.');
+    });
+    var cap = /^\d+([.,]\d+)?$/.test(m.Capacita_Kg || '') ? Number(m.Capacita_Kg.replace(',', '.')) : null;
+    if (m.Capacita_Kg && !cap) errori.push(fileM + ', riga ' + righe.Capacita_Kg + ', voce Capacita_Kg: «' + m.Capacita_Kg + '» non è un numero di kg.');
+    function numeri(k) {
+      if (!m[k]) return [];
+      var l = listaNumeri(m[k]), cattivi = l.filter(function (x) { return !/^\d+$/.test(x); });
+      if (cattivi.length) errori.push(fileM + ', riga ' + righe[k] + ', voce ' + k + ': «' + cattivi[0] + '» non è un numero intero.');
+      return l.filter(function (x) { return /^\d+$/.test(x); }).map(Number);
+    }
+    var temperature = numeri('Temperature'), giri = numeri('Giri'), opzioni = listaNumeri(m.Opzioni);
+    if (m.Versione_Profilo && !/^v\d+\.\d+$/.test(m.Versione_Profilo)) errori.push(fileM + ', riga ' + righe.Versione_Profilo + ', voce Versione_Profilo: «' + m.Versione_Profilo + '» deve essere come v1.0.');
+    if (!programmi.length) errori.push(fileP + ': non contiene nessun programma.');
+    programmi.forEach(function (p, i) {
+      var dove = fileP + ', riga ' + (i + 2) + ', colonna ';
+      var parziale = p.Programma === 'R' || p.Programma === 'C';
+      if (!/^([1-9]\d?|R|C)$/.test(p.Programma)) errori.push(dove + 'Programma: «' + p.Programma + '» deve essere un numero, R (risciacquo) o C (centrifuga).');
+      ['Temp_Std', 'Temp_Max'].forEach(function (k) {
+        if (p[k] == null && !parziale) errori.push(dove + k + ': è vuota, ma serve per un programma di lavaggio.');
+        if (p[k] != null && temperature.length && temperature.indexOf(p[k]) < 0) errori.push(dove + k + ': ' + p[k] + ' °C non è una posizione della manopola (' + temperature.join(', ') + ').');
+      });
+      if (p.Temp_Std != null && p.Temp_Max != null && p.Temp_Std > p.Temp_Max) errori.push(dove + 'Temp_Std: ' + p.Temp_Std + ' °C supera la temperatura massima del programma (' + p.Temp_Max + ' °C).');
+      if (p.Giri_Max != null && giri.length && giri.indexOf(p.Giri_Max) < 0) errori.push(dove + 'Giri_Max: ' + p.Giri_Max + ' non è una posizione della manopola (' + giri.join(', ') + ').');
+      if (p.Carico_Max_Kg == null && p.Carico_Max_Paia == null) errori.push(dove + 'Carico_Max_Kg: serve il carico massimo in kg (oppure in paia, colonna Carico_Max_Paia).');
+      if (p.Carico_Max_Kg != null && cap && p.Carico_Max_Kg > cap) errori.push(dove + 'Carico_Max_Kg: ' + String(p.Carico_Max_Kg).replace('.', ',') + ' kg supera la capacità della macchina (' + m.Capacita_Kg + ' kg).');
+      if (p.Durata_Min != null && p.Durata_Min <= 0) errori.push(dove + 'Durata_Min: deve essere maggiore di zero.');
+      (p.Opzioni_Escluse || []).forEach(function (o) {
+        if (!opzioni.some(function (n) { return o === n || o.indexOf(n + ' ') === 0; })) errori.push(dove + 'Opzioni_Escluse: «' + o + '» non è un’opzione della macchina (' + opzioni.join(', ') + ').');
+      });
+    });
+    return errori;
+  }
+
+  function esaminaProfilo(file) {
+    var p = stato.profilo; p.fase = 'lavoro'; p.errori = []; ridisegna();
+    var lettura = window.JSZip ? JSZip.loadAsync(file).catch(function () { return null; }) : Promise.resolve(null);
+    lettura.then(function (zip) {
+      if (!zip) return { errori: [file.name + ' non è un file zip leggibile.'] };
+      var vm = trovaFile(zip, SCHEMI.profilo_macchina.fileProfilo), vp = trovaFile(zip, SCHEMI.profilo_programmi.fileProfilo);
+      if (!vm || !vp) return { errori: [file.name + ' non sembra un profilo lavatrice: servono macchina.csv e programmi.csv.'] };
+      return Promise.all([vm.async('string'), vp.async('string')]).then(function (t) {
+        var em = controllaCSV(SCHEMI.profilo_macchina, t[0]), ep = controllaCSV(SCHEMI.profilo_programmi, t[1]);
+        em.errori = em.errori.map(function (e) { return e.replace(SCHEMI.profilo_macchina.file, 'macchina.csv'); });
+        ep.errori = ep.errori.map(function (e) { return e.replace(SCHEMI.profilo_programmi.file, 'programmi.csv'); });
+        var errori = em.errori.concat(ep.errori);
+        if (!errori.length) errori = controllaProfilo(em.dati, ep.dati, 'macchina.csv', 'programmi.csv');
+        return { errori: errori, dati: { profilo_macchina: em.dati, profilo_programmi: ep.dati }, nomeFile: file.name };
+      });
+    }).then(function (esame) {
+      p.esame = esame; p.errori = esame.errori; p.fase = esame.errori.length ? 'errori' : 'conferma'; ridisegna();
+    });
+  }
+  function confermaProfilo() {
+    var p = stato.profilo; if (!p.esame) return;
+    p.fase = 'lavoro'; ridisegna();
+    archivio.sostituisciPiu(p.esame.dati).then(function () {
+      p.fase = 'importato'; p.esame = null; return aggiornaArchivio();
+    }).catch(function (e) {
+      p.fase = 'errori'; p.errori = ['Il profilo non è stato salvato e quello di prima non è cambiato: ' + (e.message || e)]; ridisegna();
+    });
+  }
+  function chiudiProfilo() { var p = stato.profilo; p.fase = null; p.esame = null; p.errori = []; ridisegna(); }
+  document.addEventListener('change', function (e) {
+    var input = e.target.closest('[data-file="profilo"]');
+    if (input && input.files && input.files[0]) { esaminaProfilo(input.files[0]); input.value = ''; }
+  });
+
+  function kg(n) { return String(n).replace('.', ',') + ' kg'; }
+  function rigaProgramma(p) {
+    var temp = p.Temp_Max == null ? 'Senza temperatura' : p.Temp_Std + '°' + (p.Temp_Max > p.Temp_Std ? ' (fino a ' + p.Temp_Max + '°)' : '');
+    var giri = p.Giri_Max === 0 ? 'Senza centrifuga' : p.Giri_Max + ' giri';
+    var carico = p.Carico_Max_Paia != null ? 'Max ' + p.Carico_Max_Paia + ' paia' : 'Max ' + kg(p.Carico_Max_Kg);
+    var escluse = (p.Opzioni_Escluse || []).length ? 'Non disponibili: ' + p.Opzioni_Escluse.join(', ') : '';
+    var nota = [p.Note, escluse].filter(Boolean).join(' · ');
+    return '<li class="programma"><span class="numero-programma" aria-label="Programma ' + p.Programma + '">' + p.Programma + '</span>' +
+      '<span class="testi"><span class="nome">' + p.Nome + '</span>' + (p.Descrizione ? '<span class="descrizione">' + p.Descrizione + '</span>' : '') +
+      (nota ? '<span class="nota">' + nota + '</span>' : '') + '</span>' +
+      '<span class="valori"><span>' + temp + '</span><span>' + giri + '</span><span>' + carico + ' · ' + p.Durata_Min + '’</span></span></li>';
+  }
+  function pannelloImportProfilo() {
+    var p = stato.profilo, c = '';
+    if (p.fase === 'lavoro') c = '<div class="allerta-blocco">' + segnala('info', 'Attendi', 'Sto controllando il file…') + '</div>';
+    if (p.fase === 'errori') {
+      var lista = p.errori.slice(0, 12).map(function (e) { return '<p>• ' + e + '</p>'; }).join('');
+      if (p.errori.length > 12) lista += '<p class="nota">E altri ' + (p.errori.length - 12) + ' errori.</p>';
+      c = '<div class="allerta-blocco">' + segnala('allerta', 'Rifiutato', p.errori.length === 1 ? 'Ho trovato 1 errore' : 'Ho trovato ' + p.errori.length + ' errori') +
+        lista + '<p class="nota">Il profilo attuale non è stato toccato.</p></div>' +
+        '<div class="fila"><button class="pulsante-secondario" type="button" data-azione="profilo-chiudi">Chiudi</button></div>';
+    }
+    if (p.fase === 'conferma' && p.esame) {
+      var m = {}; p.esame.dati.profilo_macchina.forEach(function (r) { m[r.Chiave] = r.Valore; });
+      c = '<div class="allerta-blocco">' + segnala('ok', 'Valido', p.esame.nomeFile) +
+        '<p>' + m.Marca + ' ' + m.Modello + ', ' + p.esame.dati.profilo_programmi.length + ' programmi, profilo ' + m.Versione_Profilo + '.</p>' +
+        (p.programmi.length ? segnala('attenzione', 'Attenzione', 'Sostituisce il profilo attuale (' + stato.profilo.macchina.Modello + ')') : '') + '</div>' +
+        '<div class="fila"><button class="pulsante-principale" type="button" data-azione="profilo-conferma">Usa questo profilo</button>' +
+        '<button class="pulsante-secondario" type="button" data-azione="profilo-chiudi">Annulla</button></div>';
+    }
+    if (p.fase === 'importato') {
+      c = '<div class="allerta-blocco">' + segnala('ok', 'Importato', 'Il profilo è salvato sul tablet ed entra nel backup') + '</div>' +
+        '<div class="fila"><button class="pulsante-secondario" type="button" data-azione="profilo-chiudi">Fatto</button></div>';
+    }
+    if (!p.fase) {
+      c = '<p class="spiega">Il file profilo_lavatrice.zip lo prepara Claude dal libretto della macchina. Se cambi lavatrice, importi il nuovo profilo: lo storico dei lavaggi resta.</p>' +
+        '<div class="fila"><label class="' + (p.programmi.length ? 'pulsante-secondario' : 'pulsante-principale') + '">' + (p.programmi.length ? 'Importa un nuovo profilo' : 'Importa il profilo') +
+        '<input type="file" accept=".zip,application/zip" data-file="profilo" class="solo-lettori"></label></div>';
+    }
+    return '<section class="pannello"><h2>' + (p.programmi.length ? 'Cambia profilo' : 'Importa il profilo') + '</h2>' + c + '</section>';
+  }
+  function disegnaProfilo() {
+    var s = SCHERMATE.profilo, p = stato.profilo, m = p.macchina, testa;
+    if (p.programmi.length) {
+      testa = '<div class="riquadri">' +
+        '<div class="riquadro"><p class="etichetta">Modello</p><p class="titolo-riquadro">' + m.Modello + '</p>' +
+          segnala('ok', 'Caricato', m.Marca + ' · da 1 a ' + kg(m.Capacita_Kg)) + '</div>' +
+        '<div class="riquadro"><p class="etichetta">Programmi</p><p class="numero">' + p.programmi.length + '</p>' +
+          '<p class="corpo-piccolo" style="margin:0;color:var(--ink-muted)">Giri fino a ' + Math.max.apply(null, listaNumeri(m.Giri).map(Number)) + ' · temperature fino a ' + Math.max.apply(null, listaNumeri(m.Temperature).map(Number)) + '°</p></div>' +
+        '<div class="riquadro"><p class="etichetta">Profilo ' + m.Versione_Profilo + '</p><p class="titolo-riquadro">' + (m.Codice ? 'Cod. ' + m.Codice : 'Senza codice') + '</p>' +
+          '<p class="corpo-piccolo" style="margin:0;color:var(--ink-muted)">' + (m.Numero_Serie ? 'S/N ' + m.Numero_Serie + ' · ' : '') + m.Fonte + '</p></div>' +
+      '</div>';
+    } else {
+      testa = '<div class="riquadro vuota"><p class="etichetta">Nessun profilo</p><p class="titolo-riquadro">La lavatrice non è ancora descritta</p>' +
+        segnala('attenzione', 'Da importare', 'Senza profilo l’app non conosce programmi e limiti della macchina') + '</div>';
+    }
+    var gruppi = [], perGruppo = {};
+    p.programmi.forEach(function (x) { if (!perGruppo[x.Gruppo]) { perGruppo[x.Gruppo] = []; gruppi.push(x.Gruppo); } perGruppo[x.Gruppo].push(x); });
+    var elenco = gruppi.map(function (g) {
+      return '<div class="gruppo"><h3 class="gruppo-titolo">' + g + '</h3><ul class="programmi">' + perGruppo[g].map(rigaProgramma).join('') + '</ul></div>';
+    }).join('');
+    return '<div class="interna">' + intestazione(s) + testa + pannelloImportProfilo() +
+      (elenco ? '<section class="pannello"><h2>Programmi</h2><p class="spiega">Temperatura, giri e carico sono i massimi del libretto: le regole dei lavaggi standard li usano per i controlli.</p>' + elenco + '</section>' : '') +
+    '</div>';
+  }
 
   /* ================= Vetrina componenti ================= */
   var PAROLE_VOTO = ['', 'Pessimo', 'Scarso', 'Discreto', 'Buono', 'Ottimo'];
@@ -1082,9 +1276,12 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
     var c = stato.home.coppia.lavatrice;
     return 'Primo: ' + voceInfo('lavatrice', c[0]).nome + ' · Secondo: ' + voceInfo('lavatrice', c[1]).nome;
   }
-  function voceInfoHome() {
-    return '<nav class="voci" aria-label="Impostazioni della Home"><a class="voce" href="#info-home"><span class="testi"><span class="codice">D1.1</span>' +
-      '<span class="nome">Info della Home</span><span class="descrizione">' + nomiCoppia() + '</span></span>' + ICONE.avanti + '</a></nav>';
+  function vociImpostazioni() {
+    var p = stato.profilo;
+    return '<nav class="voci" aria-label="Impostazioni"><a class="voce" href="#info-home"><span class="testi"><span class="codice">D1.1</span>' +
+      '<span class="nome">Info della Home</span><span class="descrizione">' + nomiCoppia() + '</span></span>' + ICONE.avanti + '</a>' +
+      '<a class="voce" href="#profilo"><span class="testi"><span class="codice">D1.2</span><span class="nome">Profilo lavatrice</span><span class="descrizione">' +
+      (p.programmi.length ? p.macchina.Modello + ' · ' + p.programmi.length + ' programmi' : 'Nessun profilo: importalo da qui') + '</span></span>' + ICONE.avanti + '</a></nav>';
   }
   function disegnaInfoHome() {
     var s = SCHERMATE['info-home'], c = stato.home.coppia.lavatrice, posto = stato.home.posto || 0, NOMI = ['Primo riquadro', 'Secondo riquadro'];
@@ -1186,7 +1383,7 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
     var schermo = $('schermo');
     if (id === 'home' && direzione) stato.home.pagina.info = 0;
     if (id === 'info-home' && direzione) stato.home.posto = 0;
-    schermo.innerHTML = id === 'home' ? disegnaHome() : id === 'dati' ? disegnaDati() : id === 'vetrina' ? disegnaVetrina() : id === 'info-home' ? disegnaInfoHome() : disegnaInterna(id);
+    schermo.innerHTML = id === 'home' ? disegnaHome() : id === 'dati' ? disegnaDati() : id === 'vetrina' ? disegnaVetrina() : id === 'info-home' ? disegnaInfoHome() : id === 'profilo' ? disegnaProfilo() : disegnaInterna(id);
     schermo.className = 'schermo ' + direzione;
     document.title = id === 'home' ? 'Tutor Casa' : SCHERMATE[id].titolo + ' · Tutor Casa';
     if (direzione !== 'apertura') { window.scrollTo(0, 0); var h = schermo.querySelector('h1'); if (h) h.focus({ preventScroll: true }); }
@@ -1298,6 +1495,8 @@ label.pulsante-secondario:focus-within { outline: 3px solid var(--topic); outlin
     if (azione === 'backup-condividi') condividiBackup();
     if (azione === 'backup-ripristina') ripristinaBackup();
     if (azione === 'backup-chiudi') chiudiBackup();
+    if (azione === 'profilo-conferma') confermaProfilo();
+    if (azione === 'profilo-chiudi') chiudiProfilo();
   });
 
   /* ================= Tema ================= */
