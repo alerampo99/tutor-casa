@@ -269,6 +269,15 @@ h1:focus { outline: none; }
 /* ---------- Schermate interne ---------- */
 .interna { display: flex; flex-direction: column; gap: var(--space-7); }
 .intestazione { display: flex; align-items: center; gap: var(--space-5); }
+/* 0.8.1 · L'intestazione (indietro e titolo) resta ferma in alto; scorrono solo i contenuti.
+   La fascia di sfondo compare solo quando la pagina scorre sotto di lei. */
+.interna { margin-top: -10px; }
+.interna > .intestazione { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; padding: 10px 0; }
+.interna > .intestazione::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 100vw; transform: translateX(-50%); z-index: -1; pointer-events: none; }
+html.scorre .interna > .intestazione::before, html.scorre .indice {
+  background: var(--ground); background: color-mix(in srgb, var(--ground) 86%, transparent);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
 .intestazione-testi { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .intestazione .etichetta { color: var(--ground-muted); font-size: 14px; }
 .vuota { display: flex; flex-direction: column; gap: var(--space-3); max-width: 720px; }
@@ -431,17 +440,15 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
 /* ---------- M3 · Guida rapida (L6) ---------- */
 .guida { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); align-items: start; }
 .indice {
-  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
-  margin: 0 calc(-1 * var(--margine)); padding: 12px var(--margine);
+  position: sticky; top: calc(var(--testata, 92px) + env(safe-area-inset-top, 0px)); z-index: 5;
+  margin: calc(-1 * var(--space-3)) calc(-1 * var(--margine)) 0; padding: 12px var(--margine);
   display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
-  background: var(--ground); background: color-mix(in srgb, var(--ground) 84%, transparent);
-  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
 }
 .indice::-webkit-scrollbar { display: none; }
 .indice .chip { flex: none; white-space: nowrap; }
 .indice .chip[aria-current="true"] { background: var(--topic); color: var(--topic-ink); font-weight: 800; box-shadow: var(--shadow-topic); }
 .sezioni-guida { display: flex; flex-direction: column; gap: var(--space-7); min-width: 0; }
-.sezione-guida { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 92px; }
+.sezione-guida { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: calc(var(--testata, 92px) + 88px); }
 .sezione-guida .titolo-sezione { color: var(--ground-ink); }
 .voci-guida { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: var(--space-4); }
 .voce-guida {
@@ -461,6 +468,147 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
 }
 .tasto-spiega:active { background: var(--topic); color: var(--topic-ink); }
 .guida-piede { margin: 0; color: var(--ground-muted); }
+
+/* ---------- M3 · Elenco standard (L1): la Riga standard diventa toccabile ---------- */
+.elenco-standard { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-7); align-items: start; }
+.gruppo-standard { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.gruppo-standard .titolo-sezione { color: var(--ground-ink); display: flex; align-items: baseline; gap: 10px; }
+.gruppo-standard .titolo-sezione .etichetta { color: var(--ground-muted); }
+.righe-standard { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.programma.toccabile { background: var(--panel); box-shadow: var(--shadow-rilievo); text-decoration: none; cursor: pointer; transition: box-shadow 120ms ease, transform 120ms ease; }
+.programma.toccabile:active { box-shadow: var(--shadow-scavato); transform: scale(0.99); }
+.programma.toccabile > svg { flex: none; stroke: var(--ink-muted); }
+.scheda-scelta { display: flex; align-items: center; gap: var(--space-5); }
+.scheda-scelta .codice-standard { width: 56px; height: 48px; font-size: 18px; }
+@media (orientation: landscape) and (min-width: 900px) { .elenco-standard { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; } }
+@media (max-width: 640px) { .programma.toccabile > svg { display: none; } }
+
+
+/* ---------- M3 · Scheda lavaggio (L1.1) · tavola approvata ---------- */
+.scheda { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); align-items: start; padding-bottom: 120px; }
+.campo { display: flex; flex-direction: column; gap: 10px; }
+.campo-testa { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.campo-testa .etichetta { color: var(--ink-muted); }
+.campo-testa .std { font-family: var(--font-tecnico); font-size: 13px; line-height: 16px; font-weight: 600; color: var(--ink-muted); text-align: right; }
+.scelte { display: flex; flex-wrap: wrap; gap: 8px; }
+.scelte.fila { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
+.scelte.fila .chip { min-width: 0; padding: 0 2px; font-size: 15px; font-family: var(--font-tecnico); }
+.chip:disabled, .tag:disabled { background: transparent; box-shadow: none; border: 1.5px dashed rgba(27,34,40,0.28); color: rgba(77,90,101,0.8); cursor: default; font-weight: 600; }
+.tag:disabled svg { display: none; }
+.tag:disabled { padding: 0 14px; }
+.manopola-tasto { padding: 0; border: 0; background: none; cursor: pointer; border-radius: 50%; flex: none; line-height: 0; }
+.manopola-tasto .manopola { width: 196px; height: 196px; }
+.nome-programma { margin: 0; font-size: 28px; line-height: 32px; font-weight: 800; letter-spacing: -0.5px; }
+.nome-programma .num { font-family: var(--font-tecnico); }
+.dati-programma { margin: 0; font-family: var(--font-tecnico); font-size: 15px; line-height: 21px; font-weight: 600; color: var(--ink-muted); }
+.suggerimento { margin: 0; font-size: 14px; line-height: 19px; color: var(--ink-muted); }
+.scheda-hero { display: flex; flex-direction: column; gap: var(--space-6); }
+.scheda-programma { display: flex; align-items: center; gap: var(--space-6); }
+.scheda-programma .testi { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.scheda-programma .testi .etichetta { color: var(--ink-muted); }
+.divisore { height: 1px; background: rgba(27,34,40,0.10); border: 0; margin: 0; }
+.pannello-scheda { background: var(--panel); color: var(--ink); box-shadow: var(--shadow-rilievo); border-radius: var(--radius-lg); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-5); }
+.pannello-testa { display: flex; flex-direction: column; gap: 4px; }
+.pannello-testa h2, .pannello-testa h3 { margin: 0; font-size: 20px; line-height: 26px; font-weight: 800; }
+.pannello-testa h3 { font-size: 18px; line-height: 24px; }
+.pannello-testa p { margin: 0; font-size: 14px; line-height: 19px; color: var(--ink-muted); }
+.riquadro.vaschetta-box { gap: 14px; justify-content: flex-start; }
+.vaschetta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.scomparto { display: flex; flex-direction: column; gap: 4px; padding: 14px 14px 16px; border-radius: 18px; background: var(--panel); box-shadow: 6px 6px 14px rgba(84,100,116,0.30), -4px -4px 10px rgba(255,255,255,0.55); min-width: 0; }
+.scomparto .num { font-family: var(--font-tecnico); font-size: 13px; font-weight: 700; color: var(--ink-muted); letter-spacing: 0.4px; text-transform: uppercase; }
+.scomparto .cosa { font-size: 16px; line-height: 21px; font-weight: 800; }
+.scomparto .quanto { font-size: 14px; line-height: 19px; color: var(--ink-muted); }
+.scomparto.vuoto { background: transparent; box-shadow: none; border: 1.5px dashed rgba(27,34,40,0.22); }
+.scomparto.vuoto .cosa { color: var(--ink-muted); font-weight: 700; }
+.cestello { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; font-size: 15px; line-height: 21px; font-weight: 600; }
+.cestello .valore-tecnico { font-family: var(--font-tecnico); font-weight: 700; }
+.esito-carico { display: flex; flex-direction: column; gap: 10px; }
+.allerta-blocco.con-spiega { flex-direction: row; align-items: flex-start; gap: 12px; }
+.allerta-blocco.con-spiega .corpo { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+.allerta-blocco.rosso { background: #F6D9D9; box-shadow: inset 0 0 0 1.5px rgba(220,38,38,0.55); }
+.allerta-blocco.ambra { background: #FBEFCB; box-shadow: inset 0 0 0 1.5px rgba(217,160,0,0.55); }
+.esito-ok { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 18px; background: var(--panel-inset); }
+.esito-ok p { margin: 0; font-size: 15px; line-height: 21px; font-weight: 600; }
+.spunte { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.spunta { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 10px 16px; border: 0; border-radius: 18px; text-align: left; cursor: pointer;
+  background: var(--panel-inset); color: var(--ink); font: inherit; font-size: 16px; line-height: 22px; font-weight: 700;
+  box-shadow: inset 3px 3px 6px rgba(84,100,116,0.30), inset -3px -3px 6px rgba(255,255,255,0.60); }
+.spunta .casella { width: 28px; height: 28px; flex: none; border-radius: 9px; border: 2px solid rgba(27,34,40,0.35); display: inline-flex; align-items: center; justify-content: center; }
+.spunta .casella svg { stroke: var(--panel-hero); display: none; }
+.spunta[aria-checked="true"] .casella { background: var(--ink); border-color: var(--ink); }
+.spunta[aria-checked="true"] .casella svg { display: block; }
+.spunta[aria-checked="true"] .testo { color: var(--ink-muted); }
+.nota-standard { display: flex; align-items: flex-start; gap: 10px; }
+.nota-standard p { margin: 0; font-size: 15px; line-height: 21px; font-weight: 600; }
+/* Avvio: barra in basso in verticale, riquadro nell'intestazione in orizzontale */
+.barra-avvio { position: fixed; left: var(--margine); right: var(--margine); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 7; max-width: 1192px; margin: 0 auto;
+  display: flex; align-items: center; gap: var(--space-4); padding: 12px 12px 12px 22px; border-radius: var(--radius-lg);
+  background: var(--panel-hero); color: var(--ink); box-shadow: 0 18px 40px rgba(0,0,0,0.45), inset 1px 1px 0 rgba(255,255,255,0.7); }
+.barra-avvio .riepilogo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.riepilogo-breve { font-family: var(--font-tecnico); font-size: 14px; line-height: 19px; font-weight: 600; color: var(--ink-muted); }
+.barra-avvio .pulsante-principale, .barra-avvio .pulsante-secondario { min-width: 150px; min-height: 56px; font-size: 18px; }
+.avvio-testa { margin-left: auto; display: flex; align-items: center; gap: var(--space-4); padding: 10px 10px 10px 20px; border-radius: var(--radius-lg); background: var(--panel-hero); color: var(--ink); box-shadow: var(--shadow-rilievo); }
+.avvio-stato { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.avvio-stato .frase, .barra-avvio .frase { color: var(--ink); font-weight: 700; }
+.avvio-testa .pulsante-principale, .avvio-testa .pulsante-secondario { min-width: 150px; min-height: 56px; font-size: 18px; }
+/* Controllo del carico: categorie a sinistra, voci a destra */
+.carico-apri { display: flex; align-items: center; gap: var(--space-4); width: 100%; padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; font: inherit; }
+.carico-titolo { margin: 0; }
+.carico-apri .testi { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.carico-apri .titolo { font-size: 20px; line-height: 26px; font-weight: 800; }
+.carico-apri .riassunto { font-family: var(--font-tecnico); font-size: 14px; line-height: 19px; font-weight: 600; color: var(--ink-muted); }
+.carico-apri .freccia { width: 48px; height: 48px; flex: none; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--panel-inset);
+  box-shadow: inset 3px 3px 6px rgba(84,100,116,0.40), inset -3px -3px 6px rgba(255,255,255,0.70); transition: transform 250ms ease; }
+.carico-apri[aria-expanded="true"] .freccia { transform: rotate(180deg); }
+.carico-corpo { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--space-5); align-items: stretch; }
+.categorie { display: flex; flex-direction: column; gap: 8px; }
+.categoria { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-height: 58px; padding: 8px 18px; border: 0; border-radius: 18px; text-align: left; cursor: pointer; font: inherit;
+  background: var(--panel-hero); color: var(--ink); box-shadow: 6px 6px 14px rgba(84,100,116,0.30), -4px -4px 10px rgba(255,255,255,0.65); }
+.categoria .nome { font-size: 16px; line-height: 21px; font-weight: 800; }
+.categoria .scelti { font-size: 14px; line-height: 19px; color: var(--ink-muted); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.categoria .scelti.nessuno { font-weight: 500; }
+.categoria[aria-selected="true"] { background: var(--topic); color: var(--topic-ink); box-shadow: var(--shadow-topic); }
+.categoria[aria-selected="true"] .scelti { color: var(--topic-ink); opacity: 0.8; }
+.parametri { display: flex; flex-direction: column; gap: var(--space-4); padding: 20px 22px; border-radius: var(--radius-lg); background: var(--panel-inset); box-shadow: var(--shadow-scavato); min-width: 0; }
+.scheda-hero { order: 1; } .scheda-carico { order: 2; } .vaschetta-box { order: 3; } .scheda-checklist { order: 4; }
+/* Foglio dei programmi */
+.lista-programmi { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.lista-programmi .programma { width: 100%; border: 0; cursor: pointer; font: inherit; text-align: left; color: var(--ink); background: var(--panel); box-shadow: 6px 6px 14px rgba(84,100,116,0.25), -4px -4px 10px rgba(255,255,255,0.6); }
+.lista-programmi .programma[aria-current="true"] { background: var(--topic); color: var(--topic-ink); box-shadow: var(--shadow-topic); }
+.lista-programmi .programma[aria-current="true"] .descrizione, .lista-programmi .programma[aria-current="true"] .valori { color: var(--topic-ink); }
+/* Orizzontale: pannello a tutta larghezza che si sfoglia, sotto Vaschetta e checklist */
+.scheda.oriz { display: flex; flex-direction: column; align-items: stretch; gap: 4px; padding-bottom: 0; }
+.scheda.oriz .sfoglia { margin: -20px -20px 0; padding: 20px 20px 0; }
+.scheda.oriz .scheda-sotto { margin-top: var(--space-5); }
+.scheda.oriz .pagina > section { min-height: 490px; height: 100%; box-sizing: border-box; }
+.scheda.oriz .binario { align-items: stretch; }
+.pagina-programma { display: grid; grid-template-columns: 250px minmax(0, 1fr) 240px; align-items: stretch; padding: 28px 0; }
+.p-man { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); padding: 0 24px; text-align: center; }
+.p-man .manopola-tasto .manopola { width: 210px; height: 210px; }
+.p-man .testi { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.p-man .testi .etichetta, .p-info > .etichetta { color: var(--ink-muted); }
+.p-impost { display: flex; flex-direction: column; justify-content: center; gap: var(--space-5); padding: 0 28px; border-left: 1px solid rgba(27,34,40,0.10); border-right: 1px solid rgba(27,34,40,0.10); min-width: 0; }
+.p-info { display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 0 24px; min-width: 0; }
+.info-riga { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-radius: 16px; background: var(--panel-inset); box-shadow: inset 2px 2px 5px rgba(84,100,116,0.30), inset -2px -2px 5px rgba(255,255,255,0.60); }
+.info-riga .etichetta { color: var(--ink-muted); }
+.info-riga .valore { font-family: var(--font-tecnico); font-size: 17px; line-height: 22px; font-weight: 700; }
+.pagina-carico { gap: var(--space-4); padding: 24px 28px; }
+.carico-testa { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: var(--space-6); align-items: start; }
+.pagina-carico .carico-corpo { grid-template-columns: 270px minmax(0, 1fr); flex: 1; }
+.scheda-sotto { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-6); align-items: stretch; }
+@media (max-width: 640px) {
+  .scheda-programma { flex-direction: column; align-items: center; text-align: center; }
+  .scheda-programma .testi { align-items: center; }
+  .manopola-tasto .manopola { width: 180px; height: 180px; }
+  .scelte.fila { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .vaschetta { grid-template-columns: minmax(0, 1fr); }
+  .carico-corpo { grid-template-columns: minmax(0, 1fr); }
+  .categorie { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pannello-scheda { padding: var(--space-5); }
+  .barra-avvio { padding: 10px 10px 10px 16px; }
+  .barra-avvio .pulsante-principale, .barra-avvio .pulsante-secondario { min-width: 112px; }
+  .avvio-stato .riepilogo-breve, .barra-avvio .riepilogo-breve { font-size: 13px; }
+}
 
 /* ---------- M3 · Foglio della spiegazione (D48) ---------- */
 .foglio {
@@ -495,9 +643,9 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
   .hub-tessere { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; }
   .tessera-hub { min-height: 0; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--space-4); }
   .guida { grid-template-columns: 236px minmax(0, 1fr); column-gap: 32px; }
-  .indice { top: calc(24px + env(safe-area-inset-top, 0px)); margin: 0; padding: 0; flex-direction: column; overflow: visible; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .indice, html.scorre .indice { top: calc(var(--testata, 92px) + 16px + env(safe-area-inset-top, 0px)); margin: 0; padding: 0; flex-direction: column; overflow: visible; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
   .indice .chip { width: 100%; text-align: left; white-space: normal; padding: 10px 18px; }
-  .sezione-guida { scroll-margin-top: 24px; }
+  .sezione-guida { scroll-margin-top: calc(var(--testata, 92px) + 16px); }
   .foglio { width: min(68vw, 780px); }
 }
 @media (max-width: 640px) {
@@ -576,7 +724,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
 <script>
 (function () {
   'use strict';
-  var VERSIONE = '0.8.0';
+  var VERSIONE = '0.8.2';
   var $ = function (id) { return document.getElementById(id); };
 
   /* ================= Albero delle schermate (Documento, sezione 3) ================= */
@@ -747,7 +895,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
         '<h2 class="titolo-pannello">Lavatrice</h2>' +
         '<p class="frase-hero">Ancora nessun lavaggio registrato.</p>' +
         '<div class="azioni-hero"><a class="pulsante-principale" href="#' + cat + '">Apri la lavatrice</a>' +
-        '<button class="pulsante-secondario" type="button" disabled title="Arriva in M4">Nuovo lavaggio</button></div>' +
+        '<a class="pulsante-secondario" href="#lavaggi-standard">Nuovo lavaggio</a></div>' +
       '</div></div>';
     var barra = (stato.richiestaInstallazione && !stato.installata)
       ? '<div class="barra-avviso"><span class="testi"><strong>Installa Tutor Casa</strong><span>Così si apre anche senza connessione</span></span>' +
@@ -916,7 +1064,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     }).then(function () {
       if (!navigator.storage || !navigator.storage.estimate) return;
       return navigator.storage.estimate().then(function (st) { stato.archivio.usatoKB = Math.round((st.usage || 0) / 1024); });
-    }).then(function () { if (['dati', 'home', 'profilo', 'database', 'lavatrice', 'guida'].indexOf(attuale) >= 0) ridisegna(); });
+    }).then(function () { if (['dati', 'home', 'profilo', 'database', 'lavatrice', 'guida', 'lavaggi-standard', 'scheda-lavaggio'].indexOf(attuale) >= 0) ridisegna(); });
   }
   function chiediProtezione() {
     if (!navigator.storage || !navigator.storage.persisted) { stato.archivio.protetto = false; return Promise.resolve(); }
@@ -1761,7 +1909,14 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
   function esc(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   // La pagina scorre dentro <body> (non nella finestra): ogni schermata nuova riparte dall'alto
   function contenitoreScorrimento() { var b = document.body; return b.scrollHeight > b.clientHeight + 1 ? b : document.scrollingElement; }
-  function inCima() { document.body.scrollTop = 0; window.scrollTo(0, 0); }
+  function inCima() { document.body.scrollTop = 0; window.scrollTo(0, 0); segnaScorrimento(); }
+  function segnaScorrimento() { document.documentElement.classList.toggle('scorre', contenitoreScorrimento().scrollTop > 4); }
+  function misuraTestata() {
+    var t = document.querySelector('.interna > .intestazione');
+    if (t) document.documentElement.style.setProperty('--testata', t.offsetHeight + 'px');
+  }
+  document.addEventListener('scroll', segnaScorrimento, { passive: true, capture: true });
+  window.addEventListener('resize', misuraTestata);
   function riduciMovimento() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
 
   /* ================= M3 · Hub Lavatrice (L0) ================= */
@@ -1804,11 +1959,279 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
       '<div class="hub-testi"><p class="etichetta"><span class="led" aria-hidden="true"></span>Stato</p>' +
         '<h2 class="titolo-stato" id="titolo-stato">Nessun lavaggio in corso</h2>' +
         '<p class="frase-hero">Quando avvii un lavaggio, lo trovi qui.</p>' + statoStandardHub() +
-        '<div class="azioni-hero"><button class="pulsante-secondario" type="button" disabled title="In arrivo">Nuovo lavaggio</button></div>' +
+        '<div class="azioni-hero"><a class="pulsante-principale" href="#lavaggi-standard">Nuovo lavaggio</a></div>' +
       '</div></section>';
     return '<div class="interna">' + intestazione(s) +
       '<div class="hub">' + hero + '<nav class="hub-tessere" aria-label="Funzioni della lavatrice">' + ORDINE_HUB.map(tesseraHub).join('') + '</nav></div></div>';
   }
+
+  /* ================= M3 · Elenco standard (L1) e scelta per la Scheda (L1.1) ================= */
+  // Lo standard scelto si ricorda anche se l'app si chiude con la Scheda aperta
+  stato.scheda = { id: null };
+  try { stato.scheda.id = localStorage.getItem('tc-scheda'); } catch (e) {}
+  function scegliStandard(id) { stato.scheda.id = id; stato.scheda.bozza = null; stato.home.pagina.scheda = 0; try { localStorage.setItem('tc-scheda', id); localStorage.removeItem('tc-bozza'); } catch (e) {} }
+  function standardScelto() { var id = stato.scheda.id; return stato.standard.elenco.filter(function (x) { return x.ID === id; })[0] || null; }
+  function avvisiPerStandard() {
+    var mappa = {};
+    if (stato.standard.elenco.length && stato.profilo.programmi.length) controllaStandard(stato.standard.elenco, stato.profilo).forEach(function (x) {
+      if (x.regola === 'V09') return;
+      (mappa[x.id] = mappa[x.id] || []).push(x.regola);
+    });
+    return mappa;
+  }
+  function valoriStandard(st) {
+    return '<span class="valori"><span>Prog. ' + esc(st.Programma) + ' · ' + esc(st.Temp_C) + '°</span><span>' + (st.Centrifuga_Giri ? esc(st.Centrifuga_Giri) + ' giri' : 'Senza centrifuga') + '</span><span>' + esc(st.Carico_Cestello) + '</span></span>';
+  }
+  function rigaStandardToccabile(st, avvisi) {
+    var a = avvisi[st.ID] || [], badge = st.Da_Verificare ? ' <span class="bollino info">Da verificare</span>' : '';
+    return '<li><a class="programma toccabile" href="#scheda-lavaggio" data-standard="' + esc(st.ID) + '" aria-label="' + esc(st.ID + ', ' + st.Nome) + '">' +
+      '<span class="numero-programma codice-standard" aria-hidden="true">' + esc(st.ID) + '</span>' +
+      '<span class="testi"><span class="nome">' + esc(st.Nome) + badge + '</span>' + (st.Capi_Inclusi ? '<span class="descrizione">' + esc(st.Capi_Inclusi) + '</span>' : '') +
+      (a.length ? '<span class="nota">Avvisi: ' + a.join(' · ') + '</span>' : '') + '</span>' + valoriStandard(st) + ICONE.avanti + '</a></li>';
+  }
+  function disegnaElencoStandard() {
+    var s = SCHERMATE['lavaggi-standard'], S = stato.standard;
+    if (!S.elenco.length) return '<div class="interna">' + intestazione(s) +
+      '<div class="riquadro vuota"><p class="etichetta">Nessuno standard</p><p class="titolo-riquadro">I lavaggi standard non sono ancora sul tablet</p>' +
+        segnala('attenzione', 'Da importare', 'Il file lavaggi_standard_vX.Y.csv si importa da Database standard') +
+        '<a class="pulsante-principale" href="#database">Apri Database standard</a></div></div>';
+    var avvisi = avvisiPerStandard();
+    function gruppo(lettera, nome) {
+      var righe = S.elenco.filter(function (x) { return x.ID[0] === lettera; });
+      return '<section class="gruppo-standard" aria-labelledby="gruppo-' + lettera + '"><h2 class="titolo-sezione" id="gruppo-' + lettera + '">' + nome + ' <span class="etichetta">' + righe.length + '</span></h2>' +
+        '<ul class="righe-standard">' + righe.map(function (st) { return rigaStandardToccabile(st, avvisi); }).join('') + '</ul></section>';
+    }
+    return '<div class="interna">' + intestazione(s) +
+      '<div class="elenco-standard">' + gruppo('S', 'Settimanali') + gruppo('O', 'Occasionali') + '</div>' +
+      '<p class="etichetta guida-piede">Standard ' + esc(S.versione || '') + '. Tocca un lavaggio per aprire la sua scheda.</p></div>';
+  }
+  /* ---------- Scheda lavaggio (L1.1): bozza del lavaggio, tavola approvata ---------- */
+  // La bozza nasce dallo standard scelto e si ricorda anche se l'app si chiude.
+  function programma(n) { return stato.profilo.programmi.filter(function (p) { return String(p.Programma) === String(n); })[0] || null; }
+  function valoriMacchina(chiave) { return listaNumeri((stato.profilo.macchina || {})[chiave]); }
+  function tempAmmesse(p) { return valoriMacchina('Temperature').map(Number).filter(function (t) { return p && (p.Temp_Max == null ? t === 0 : t <= p.Temp_Max); }); }
+  function giriAmmessi(p) { return valoriMacchina('Giri').map(Number).filter(function (g) { return p && g <= p.Giri_Max; }); }
+  function opzioniAmmesse(p) { var esc = (p && p.Opzioni_Escluse) || []; return valoriMacchina('Opzioni').filter(function (o) { return esc.indexOf(o) < 0; }); }
+  // D41: il carico parte già compilato dallo standard
+  function caricoDaStandard(st) {
+    var t = tessuti(st), c = { tessuti: [], colori: [], speciali: [], riempimento: st.Carico_Cestello || '', additivi: [] };
+    ['lana', 'seta', 'spugna', 'elastan', 'pile'].forEach(function (k) { if (t[k]) c.tessuti.push(k); });
+    if (st.Capo_Tecnico) c.tessuti.unshift('tecnico');
+    if (t.bianchi) c.colori.push('bianchi');
+    var a = st.Ammorbidente_Citrico;
+    if (a === 'Citrico' || a === 'Citrico o ammorbidente') c.additivi.push('citrico');
+    if (a === 'Ammorbidente') c.additivi.push('ammorbidente');
+    return c;
+  }
+  function nuovaBozza(st) {
+    return { id: st.ID, programma: String(st.Programma), temp: st.Temp_C, giri: st.Centrifuga_Giri, opzioni: [],
+      carico: caricoDaStandard(st), spunte: (st.Checklist || []).map(function () { return false; }), categoria: 'tessuti', aperto: false };
+  }
+  function salvaBozza() { try { localStorage.setItem('tc-bozza', JSON.stringify(stato.scheda.bozza)); } catch (e) {} }
+  try { stato.scheda.bozza = JSON.parse(localStorage.getItem('tc-bozza') || 'null'); } catch (e) { stato.scheda.bozza = null; }
+  function bozzaAttuale() {
+    var st = standardScelto(); if (!st) return null;
+    if (!stato.scheda.bozza || stato.scheda.bozza.id !== st.ID) { stato.scheda.bozza = nuovaBozza(st); salvaBozza(); }
+    return stato.scheda.bozza;
+  }
+  var GRUPPI_CARICO = [['tessuti', 'Tessuti', 'Scegli tutti i tessuti del carico, anche quelli di un solo capo.'], ['colori', 'Colori', 'I colori presenti nel carico.'],
+    ['speciali', 'Casi speciali', 'Capi che chiedono attenzioni particolari.'], ['riempimento', 'Riempimento', 'Quanto è pieno il cestello.'], ['additivi', 'Additivi', 'Tutto quello che metti in vaschetta o in ammollo.']];
+  function sceltiGruppo(c, g) {
+    if (g === 'riempimento') return c.riempimento || '';
+    return (c[g] || []).map(function (id) { return CARICO[g][id]; }).join(', ');
+  }
+  function oraFine(minuti) { var d = new Date(Date.now() + minuti * 60000); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  function durataTesto(min) { if (!min) return ''; var h = Math.floor(min / 60), m = min % 60; return 'circa ' + (h ? h + ' h' + (m ? ' ' + m + ' min' : '') : m + ' min'); }
+  function etichettaTemp(t) { return t === 0 ? 'Freddo' : t + '°'; }
+  function etichettaGiri(g) { return g === 0 ? 'Senza' : String(g); }
+  function manopolaScheda(n, p) {
+    var svg = $('modello-manopola').innerHTML, slot = n === 'R' ? 15 : n === 'C' ? 16 : Number(n);
+    svg = svg.replace('<line x1="70" y1="150" x2="84" y2="150"', '<line x1="70" y1="150" x2="84" y2="150" transform="rotate(' + ((slot - 1) * 22.5 - 270) + ' 150 150)"');
+    svg = svg.replace(new RegExp('<text x="([\\d.]+)" y="([\\d.]+)" class="quadrante">' + n + '</text>'), function (m, x, y) {
+      return '<circle cx="' + x + '" cy="' + y + '" r="15" style="fill: var(--topic)"></circle><text x="' + x + '" y="' + y + '" class="quadrante" style="fill: var(--topic-ink); font-weight: 700">' + n + '</text>';
+    });
+    return '<button class="manopola-tasto" type="button" data-azione="scegli-programma" aria-haspopup="dialog" aria-label="Programma ' + esc(n) + (p ? ', ' + esc(p.Nome) : '') + '. Tocca per cambiarlo">' + svg + '</button>';
+  }
+  function chipScelta(testo, attivo, spento, dati) {
+    return '<button class="chip" type="button" role="radio" aria-checked="' + attivo + '"' + (spento ? ' disabled' : '') + ' ' + dati + '>' + testo + '</button>';
+  }
+  function tagScelta(testo, attivo, spento, dati) {
+    return '<button class="tag" type="button" aria-pressed="' + attivo + '"' + (spento ? ' disabled' : '') + ' ' + dati + '>' + (spento ? '' : attivo ? ICONA_SPUNTA : ICONA_PIU) + esc(testo) + '</button>';
+  }
+  function campoScheda(nome, std, dentro, ruolo, fila) {
+    return '<div class="campo"><div class="campo-testa"><span class="etichetta">' + nome + '</span>' + (std ? '<span class="std">' + std + '</span>' : '') + '</div>' +
+      '<div class="scelte' + (fila ? ' fila' : '') + '" role="' + ruolo + '" aria-label="' + nome + '">' + dentro + '</div></div>';
+  }
+  function campiProgramma(b, st, p) {
+    var tAmm = tempAmmesse(p), gAmm = giriAmmessi(p), oAmm = opzioniAmmesse(p);
+    var temp = valoriMacchina('Temperature').map(Number).map(function (t) { return chipScelta(etichettaTemp(t), t === b.temp, tAmm.indexOf(t) < 0, 'data-temp="' + t + '"'); }).join('');
+    var giri = valoriMacchina('Giri').map(Number).map(function (g) { return chipScelta(etichettaGiri(g), g === b.giri, gAmm.indexOf(g) < 0, 'data-giri="' + g + '"'); }).join('');
+    var opz = valoriMacchina('Opzioni').sort(function (x, y) { return (oAmm.indexOf(x) < 0) - (oAmm.indexOf(y) < 0); }).map(function (o) { return tagScelta(o, b.opzioni.indexOf(o) >= 0, oAmm.indexOf(o) < 0, 'data-opzione="' + esc(o) + '"'); }).join('');
+    var escluse = (p && p.Opzioni_Escluse && p.Opzioni_Escluse.length) ? 'Spente: non col Prog. ' + esc(p.Programma) : '';
+    return campoScheda('Temperatura', 'Standard ' + etichettaTemp(st.Temp_C), temp, 'radiogroup', true) +
+      campoScheda('Centrifuga · giri', 'Standard ' + etichettaGiri(st.Centrifuga_Giri), giri, 'radiogroup', true) +
+      campoScheda('Opzioni', escluse, opz, 'group', false);
+  }
+  function esitiBozza(b) { return verificaCarico(b.carico); }
+  function esitoHtml(esiti) {
+    if (!esiti.length) return '<div class="esito-carico" aria-live="polite"><div class="esito-ok">' + segnala('ok', 'Ok', '') + '<p>Nessun allerta per questo carico.</p></div></div>';
+    var BOLLINO = { rosso: ['allerta', 'Allerta'], ambra: ['attenzione', 'Attenzione'], info: ['info', 'Info'] };
+    return '<div class="esito-carico" aria-live="polite">' + esiti.map(function (x) {
+      var bl = BOLLINO[x.livello];
+      return '<div class="allerta-blocco con-spiega ' + x.livello + '"><div class="corpo"><div class="riga"><span class="bollino ' + bl[0] + '">' + bl[1] + '</span><span class="codice">' + x.regola + '</span></div>' +
+        '<p>' + esc(x.frase) + '</p></div><button class="tasto-spiega" type="button" data-spiega-regola="' + x.regola + '" aria-haspopup="dialog" aria-label="Spiegazione: ' + x.regola + '">?</button></div>';
+    }).join('') + '</div>';
+  }
+  function statoEsiti(esiti) {
+    var r = esiti.filter(function (x) { return x.livello === 'rosso'; }).length, a = esiti.filter(function (x) { return x.livello === 'ambra'; }).length;
+    if (r) return segnala('allerta', r === 1 ? '1 allerta rosso' : r + ' allerta rossi', 'Avvia chiederà conferma');
+    if (a) return segnala('attenzione', a === 1 ? '1 attenzione' : a + ' attenzioni', 'Leggi il controllo del carico');
+    return segnala('ok', 'Pronto', esiti.length ? 'Solo consigli' : 'Nessun allerta');
+  }
+  function categorieCarico(b) {
+    var c = b.carico, g = GRUPPI_CARICO.filter(function (x) { return x[0] === b.categoria; })[0] || GRUPPI_CARICO[0];
+    var cat = GRUPPI_CARICO.map(function (x) {
+      var sc = sceltiGruppo(c, x[0]);
+      return '<button class="categoria" type="button" role="tab" id="cat-' + x[0] + '" data-categoria="' + x[0] + '" aria-selected="' + (x[0] === g[0]) + '" aria-controls="parametri-carico">' +
+        '<span class="nome">' + x[1] + '</span><span class="scelti' + (sc ? '' : ' nessuno') + '">' + (sc ? esc(sc) : 'Nessuno') + '</span></button>';
+    }).join('');
+    var voci = g[0] === 'riempimento'
+      ? CARICO.riempimento.map(function (v) { return chipScelta(v, c.riempimento === v, false, 'data-riempimento="' + v + '"'); }).join('')
+      : Object.keys(CARICO[g[0]]).map(function (id) { return tagScelta(CARICO[g[0]][id], c[g[0]].indexOf(id) >= 0, false, 'data-carico="' + g[0] + ':' + id + '"'); }).join('');
+    return '<div class="carico-corpo"><div class="categorie" role="tablist" aria-label="Categorie del carico" aria-orientation="vertical">' + cat + '</div>' +
+      '<div class="parametri" id="parametri-carico" role="tabpanel" aria-labelledby="cat-' + g[0] + '"><div class="pannello-testa"><h3>' + g[1] + '</h3><p>' + g[2] + '</p></div>' +
+      '<div class="scelte" role="' + (g[0] === 'riempimento' ? 'radiogroup' : 'group') + '" aria-label="' + g[1] + '">' + voci + '</div></div></div>';
+  }
+  function vaschetta(b, st, p) {
+    var add = b.carico.additivi, ammorb;
+    if (p && p.Ammorbidente === false) ammorb = ['vuoto', 'Vuoto', 'Il Prog. ' + esc(p.Programma) + ' non lo usa'];
+    else if (add.indexOf('citrico') >= 0 && add.indexOf('ammorbidente') >= 0) ammorb = ['', 'Citrico o ammorbidente', 'Uno solo dei due'];
+    else if (add.indexOf('citrico') >= 0) ammorb = ['', 'Acido citrico', '100 ml della soluzione al 15%'];
+    else if (add.indexOf('ammorbidente') >= 0) ammorb = ['', 'Ammorbidente', 'Dose della confezione'];
+    else ammorb = ['vuoto', 'Vuoto', 'Niente in questo lavaggio'];
+    var pre = p && p.Prelavaggio ? ['', 'Facoltativo', 'Solo per bianchi molto sporchi'] : ['vuoto', 'Vuoto', 'Il Prog. ' + esc(b.programma) + ' non lo usa'];
+    var det = 'Detersivo';
+    var dose = st.Detersivo ? esc(st.Detersivo) : (p && /dose/i.test(p.Note || '') ? esc(p.Note) : 'Dose della confezione');
+    function sc(n, x) { return '<div class="scomparto' + (x[0] ? ' vuoto' : '') + '"><span class="num">' + n + '</span><span class="cosa">' + x[1] + '</span><span class="quanto">' + x[2] + '</span></div>'; }
+    var fogl = st.Foglietti_Acchiappacolore;
+    return '<section class="riquadro vaschetta-box" aria-labelledby="t-vasc"><h2 class="titolo-riquadro" id="t-vasc">Vaschetta</h2><div class="vaschetta">' +
+      sc('1 · Prelavaggio', pre) + sc('2 · Lavaggio', ['', det, dose]) + sc('3 · Ammorbidente', ammorb) + '</div>' +
+      '<div class="cestello"><span>Nel cestello:</span><span class="valore-tecnico">' + esc(fogl == null || fogl === '' ? '0' : fogl) + '</span><span>' + (String(fogl) === '1' ? 'foglietto' : 'foglietti') + ' acchiappacolore</span></div></section>';
+  }
+  function checklist(b, st) {
+    var voci = st.Checklist || [], fatti = b.spunte.filter(Boolean).length;
+    return '<section class="pannello-scheda scheda-checklist" aria-labelledby="t-check"><div class="pannello-testa"><h2 id="t-check">Prima di chiudere l’oblò</h2><p>' +
+      (voci.length ? fatti + ' di ' + voci.length + ' fatti' : 'Nessun passaggio per questo standard') + '</p></div>' +
+      (voci.length ? '<ul class="spunte">' + voci.map(function (v, i) {
+        return '<li><button class="spunta" type="button" role="checkbox" aria-checked="' + !!b.spunte[i] + '" data-spunta="' + i + '"><span class="casella">' + ICONA_SPUNTA + '</span><span class="testo">' + esc(v) + '</span></button></li>';
+      }).join('') + '</ul>' : '') +
+      (st.Note_Speciali ? '<div class="nota-standard">' + segnala('info', 'Nota', '') + '<p>' + esc(st.Note_Speciali) + '</p></div>' : '') + '</section>';
+  }
+  function riepilogoBozza(b, p) {
+    return 'Prog. ' + esc(b.programma) + ' · ' + etichettaTemp(b.temp) + ' · ' + (b.giri === 0 ? 'senza centrifuga' : b.giri + ' giri') + (p && p.Durata_Min ? ' · fine ' + oraFine(p.Durata_Min) : '');
+  }
+  function schedaOrizzontale() { return window.matchMedia('(orientation: landscape) and (min-width: 900px)').matches; }
+  function disegnaScheda() {
+    var s = SCHERMATE['scheda-lavaggio'], st = standardScelto();
+    if (!st) return '<div class="interna">' + intestazione(s) +
+      '<div class="riquadro vuota"><p class="etichetta">Nessun lavaggio scelto</p><p class="titolo-riquadro">Scegli un lavaggio dall’elenco</p>' +
+        '<a class="pulsante-principale" href="#lavaggi-standard">Apri i lavaggi standard</a></div></div>';
+    var b = bozzaAttuale(), p = programma(b.programma), esiti = esitiBozza(b), oriz = schedaOrizzontale();
+    // Avvia arriva nella 0.8.3: per ora il pulsante è un segnaposto spento
+    var avvia = '<button class="pulsante-secondario" type="button" disabled title="Arriva nella 0.8.3" data-azione="avvia">Avvia</button>';
+    var testa = '<header class="intestazione"><button class="pulsante-servizio" type="button" data-azione="indietro" aria-label="Indietro, a Lavaggi standard">' + ICONE.indietro + '</button>' +
+      '<div class="intestazione-testi"><p class="etichetta">L1.1 · Lavaggio standard ' + esc(st.ID) + '</p><h1 class="display" tabindex="-1">' + esc(st.Nome) + '</h1></div>' +
+      (oriz ? '<div class="avvio-testa" role="region" aria-label="Avvio"><div class="avvio-stato">' + statoEsiti(esiti) + '<span class="riepilogo-breve">' + riepilogoBozza(b, p) + '</span></div>' + avvia + '</div>' : '') + '</header>';
+    var nomeProg = '<h2 class="nome-programma"><span class="num">' + esc(b.programma) + '</span> · ' + esc(p ? p.Nome : 'Programma sconosciuto') + '</h2>';
+    var html;
+    if (oriz) {
+      var info = [['Durata', p ? durataTesto(p.Durata_Min) : ''], ['Fine prevista', p && p.Durata_Min ? oraFine(p.Durata_Min) : ''], ['Carico massimo', p && p.Carico_Max_Kg ? String(p.Carico_Max_Kg).replace('.', ',') + ' kg' : (p && p.Carico_Max_Paia ? p.Carico_Max_Paia + ' paia' : '')], ['Detersivo', st.Detersivo || '']]
+        .filter(function (x) { return x[1]; }).map(function (x) { return '<div class="info-riga"><span class="etichetta">' + x[0] + '</span><span class="valore">' + esc(x[1]) + '</span></div>'; }).join('');
+      var rossi = esiti.filter(function (x) { return x.livello !== 'info'; }).length;
+      var pagProg = '<section class="pannello-hero pagina-programma" aria-label="Programma e impostazioni">' +
+        '<div class="p-man">' + manopolaScheda(b.programma, p) + '<div class="testi"><p class="etichetta">Programma</p>' + nomeProg + '<p class="suggerimento">Tocca la manopola per cambiarlo.</p></div></div>' +
+        '<div class="p-impost">' + campiProgramma(b, st, p) + '</div>' +
+        '<div class="p-info"><p class="etichetta">' + esc(p ? p.Descrizione || p.Gruppo || '' : '') + '</p>' + info +
+          (rossi ? segnala(esiti.some(function (x) { return x.livello === 'rosso'; }) ? 'allerta' : 'attenzione', 'Carico: ' + rossi + (rossi === 1 ? ' avviso' : ' avvisi'), 'sfoglia →') : segnala('ok', 'Carico ok', '')) + '</div></section>';
+      var pagCarico = '<section class="pannello-scheda pagina-carico scheda-carico" aria-labelledby="t-carico">' +
+        '<div class="carico-testa"><div class="pannello-testa"><h2 id="t-carico">Controllo del carico</h2><p>Compilato dallo standard: scegli una categoria a sinistra per cambiarla.</p></div>' + esitoHtml(esiti) + '</div>' +
+        categorieCarico(b) + '</section>';
+      if (stato.home.pagina.scheda == null) stato.home.pagina.scheda = 0;
+      html = '<div class="scheda oriz">' + sfoglia('scheda', 'Scheda lavaggio', [pagProg, pagCarico], stato.home.pagina.scheda) +
+        '<div class="scheda-sotto">' + vaschetta(b, st, p) + checklist(b, st) + '</div></div>';
+    } else {
+      var hero = '<section class="pannello-hero scheda-hero" aria-label="Programma e impostazioni"><div class="scheda-programma">' + manopolaScheda(b.programma, p) +
+        '<div class="testi"><p class="etichetta">Programma</p>' + nomeProg + '<p class="dati-programma">' + esc([p && p.Descrizione, p && p.Carico_Max_Kg ? 'fino a ' + String(p.Carico_Max_Kg).replace('.', ',') + ' kg' : '', p ? durataTesto(p.Durata_Min) : ''].filter(Boolean).join(' · ')) + '</p>' +
+        '<p class="suggerimento">Tocca la manopola per cambiare programma.</p></div></div><hr class="divisore">' + campiProgramma(b, st, p) + '</section>';
+      var riass = GRUPPI_CARICO.map(function (x) { return sceltiGruppo(b.carico, x[0]); }).filter(Boolean).join(' · ');
+      var giu = '<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="stroke: currentColor"><path d="M6 9l6 6 6-6"></path></svg>';
+      var carico = '<section class="pannello-scheda scheda-carico" aria-labelledby="t-carico"><h2 class="carico-titolo" id="t-carico"><button class="carico-apri" type="button" data-azione="carico-apri" aria-expanded="' + !!b.aperto + '" aria-controls="carico-dettaglio">' +
+        '<span class="testi"><span class="titolo">Controllo del carico</span><span class="riassunto">' + esc(riass || 'Nessuna scelta') + '</span></span><span class="freccia">' + giu + '</span></button></h2>' +
+        esitoHtml(esiti) + (b.aperto ? '<div id="carico-dettaglio">' + categorieCarico(b) + '</div>' : '<p class="suggerimento">Tocca per cambiare tessuti, colori, casi speciali, riempimento e additivi.</p>') + '</section>';
+      html = '<div class="scheda">' + hero + carico + vaschetta(b, st, p) + checklist(b, st) + '</div>' +
+        '<div class="barra-avvio" role="region" aria-label="Avvio"><div class="riepilogo">' + statoEsiti(esiti) + '<span class="riepilogo-breve">' + esc(st.ID) + ' · ' + riepilogoBozza(b, p) + '</span></div>' + avvia + '</div>';
+    }
+    return '<div class="interna">' + testa + html + '</div>';
+  }
+  // Ogni tocco nella Scheda cambia la bozza, la salva e ridisegna lasciando la pagina e il fuoco dove sono
+  function cambiaBozza(fn, fuoco) {
+    var b = stato.scheda.bozza; if (!b) return;
+    fn(b); salvaBozza(); ridisegna();
+    if (fuoco) { var el = document.querySelector(fuoco); if (el) el.focus({ preventScroll: true }); }
+  }
+  function scegliProgramma(n) {
+    var p = programma(n); if (!p) return;
+    cambiaBozza(function (b) {
+      b.programma = String(n);
+      var tAmm = tempAmmesse(p), gAmm = giriAmmessi(p), oAmm = opzioniAmmesse(p);
+      if (tAmm.indexOf(b.temp) < 0) b.temp = tAmm.indexOf(p.Temp_Std) >= 0 ? p.Temp_Std : (tAmm.length ? tAmm[tAmm.length - 1] : 0);
+      if (gAmm.indexOf(b.giri) < 0) b.giri = gAmm.length ? gAmm[gAmm.length - 1] : 0;
+      b.opzioni = b.opzioni.filter(function (o) { return oAmm.indexOf(o) >= 0; });
+    }, '[data-azione="scegli-programma"]');
+  }
+  function apriProgrammi() {
+    var b = stato.scheda.bozza; if (!b) return;
+    var righe = stato.profilo.programmi.map(function (p) {
+      var on = String(p.Programma) === b.programma;
+      return '<li><button class="programma" type="button" data-programma="' + esc(p.Programma) + '" aria-current="' + on + '">' +
+        '<span class="numero-programma" aria-hidden="true">' + esc(p.Programma) + '</span><span class="testi"><span class="nome">' + esc(p.Nome) + '</span><span class="descrizione">' + esc(p.Descrizione || '') + '</span></span>' +
+        '<span class="valori"><span>' + (p.Temp_Max == null ? '—' : 'max ' + p.Temp_Max + '°') + '</span><span>' + p.Giri_Max + ' giri</span><span>' + durataTesto(p.Durata_Min).replace('circa ', '') + '</span></span></button></li>';
+    }).join('');
+    apriFoglio({ etichetta: 'Scheda lavaggio', titolo: 'Scegli il programma', breve: 'Temperatura e giri si adattano ai limiti del programma scelto.', html: '<ul class="lista-programmi">' + righe + '</ul>' }, document.querySelector('[data-azione="scegli-programma"]'));
+  }
+  function spiegaRegola(codice, da) {
+    var g = stato.guida.voci.filter(function (x) { return (x.Regole || []).indexOf(codice) >= 0; })[0];
+    if (g) { apriVoceGuida(g.ID, da); return; }
+    var e = stato.scheda.bozza ? esitiBozza(stato.scheda.bozza).filter(function (x) { return x.regola === codice; })[0] : null;
+    apriFoglio({ etichetta: 'Controllo del carico', titolo: codice, breve: e ? e.frase : '', codici: [codice] }, da);
+  }
+  window.TutorCasa.scheda = { bozza: function () { return stato.scheda.bozza; }, caricoDaStandard: caricoDaStandard };
+  document.addEventListener('click', function (e) {
+    if (attuale !== 'scheda-lavaggio') return;
+    var t = e.target.closest('button'); if (!t || t.disabled) return;
+    var d = t.dataset;
+    if (d.temp != null) cambiaBozza(function (b) { b.temp = Number(d.temp); }, '[data-temp="' + d.temp + '"]');
+    else if (d.giri != null) cambiaBozza(function (b) { b.giri = Number(d.giri); }, '[data-giri="' + d.giri + '"]');
+    else if (d.opzione != null) cambiaBozza(function (b) { var i = b.opzioni.indexOf(d.opzione); if (i >= 0) b.opzioni.splice(i, 1); else b.opzioni.push(d.opzione); }, '[data-opzione="' + d.opzione + '"]');
+    else if (d.carico) cambiaBozza(function (b) { var x = d.carico.split(':'), l = b.carico[x[0]], i = l.indexOf(x[1]); if (i >= 0) l.splice(i, 1); else l.push(x[1]); }, '[data-carico="' + d.carico + '"]');
+    else if (d.riempimento) cambiaBozza(function (b) { b.carico.riempimento = d.riempimento; }, '[data-riempimento="' + d.riempimento + '"]');
+    else if (d.categoria) cambiaBozza(function (b) { b.categoria = d.categoria; }, '[data-categoria="' + d.categoria + '"]');
+    else if (d.spunta != null) cambiaBozza(function (b) { b.spunte[Number(d.spunta)] = !b.spunte[Number(d.spunta)]; }, '[data-spunta="' + d.spunta + '"]');
+    else if (d.azione === 'carico-apri') cambiaBozza(function (b) { b.aperto = !b.aperto; }, '[data-azione="carico-apri"]');
+    else if (d.azione === 'scegli-programma') apriProgrammi();
+    else if (d.spiegaRegola) spiegaRegola(d.spiegaRegola, t);
+  });
+  // Nel foglio dei programmi: un tocco sceglie e chiude
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('#foglio [data-programma]'); if (!t) return;
+    var n = t.dataset.programma; chiudiFoglio(); setTimeout(function () { scegliProgramma(n); }, 0);
+  });
+  // Ruotando il tablet la Scheda cambia disposizione
+  window.matchMedia('(orientation: landscape) and (min-width: 900px)').addEventListener('change', function () { if (attuale === 'scheda-lavaggio') ridisegna(); });
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('[data-standard]');
+    if (a) scegliStandard(a.dataset.standard);
+  });
 
   /* ================= M3 · Guida rapida (L6, D47, D48) ================= */
   function voceGuida(g) {
@@ -1846,7 +2269,8 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
   function aggiornaIndice() {
     if (attuale !== 'guida' || indiceFisso !== null) return;
     var sez = document.querySelectorAll('[data-sezione-guida]'); if (!sez.length) return;
-    var nav = document.querySelector('.indice'), sopra = nav && nav.getBoundingClientRect().height < 120 ? nav.getBoundingClientRect().bottom + 24 : 80, attiva = 0;
+    var nav = document.querySelector('.indice'), t = document.querySelector('.interna > .intestazione'), attiva = 0;
+    var sopra = nav && nav.getBoundingClientRect().height < 120 ? nav.getBoundingClientRect().bottom + 24 : (t ? t.getBoundingClientRect().bottom : 0) + 40;
     Array.prototype.forEach.call(sez, function (s, i) { if (s.getBoundingClientRect().top <= sopra) attiva = i; });
     var sc = contenitoreScorrimento(); if (sc.scrollTop > 0 && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 4) attiva = sez.length - 1;
     var attuali = document.querySelector('.indice [aria-current="true"]');
@@ -1870,6 +2294,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
       '<h2 class="foglio-titolo" id="foglio-titolo" tabindex="-1">' + esc(c.titolo) + '</h2>' +
       (c.breve ? '<p class="foglio-breve">' + esc(c.breve) + '</p>' : '') +
       ((c.punti || []).length ? '<div class="foglio-punti">' + c.punti.map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') + '</div>' : '') +
+      (c.html || '') +
       ((c.codici || []).length ? '<p class="collegata"><span class="etichetta">Collegata a</span>' + c.codici.map(function (x) { return '<span class="codice-regola">' + esc(x) + '</span>'; }).join('') + '</p>' : '');
     $('foglio-corpo').scrollTop = 0;
     foglio.ritorno = da || document.activeElement;
@@ -2094,10 +2519,12 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     if (id === 'home' && direzione) stato.home.pagina.info = 0;
     if (id === 'info-home' && direzione) stato.home.posto = 0;
     if (direzione) nascondiFoglio();
-    schermo.innerHTML = id === 'home' ? disegnaHome() : id === 'lavatrice' ? disegnaHub() : id === 'guida' ? disegnaGuida() : id === 'dati' ? disegnaDati() : id === 'vetrina' ? disegnaVetrina() : id === 'info-home' ? disegnaInfoHome() : id === 'profilo' ? disegnaProfilo() : id === 'database' ? disegnaDatabase() : disegnaInterna(id);
+    schermo.innerHTML = id === 'home' ? disegnaHome() : id === 'lavatrice' ? disegnaHub() : id === 'guida' ? disegnaGuida() : id === 'lavaggi-standard' ? disegnaElencoStandard() : id === 'scheda-lavaggio' ? disegnaScheda() : id === 'dati' ? disegnaDati() : id === 'vetrina' ? disegnaVetrina() : id === 'info-home' ? disegnaInfoHome() : id === 'profilo' ? disegnaProfilo() : id === 'database' ? disegnaDatabase() : disegnaInterna(id);
     schermo.className = 'schermo ' + direzione;
+    misuraTestata(); segnaScorrimento();
     document.title = id === 'home' ? 'Tutor Casa' : SCHERMATE[id].titolo + ' · Tutor Casa';
-    if (direzione !== 'apertura') { inCima(); var h = schermo.querySelector('h1'); if (h) h.focus({ preventScroll: true }); }
+    // Solo cambiando schermata si riparte dall'alto; un ridisegno (dopo un tocco) lascia la pagina dov'è
+    if (direzione && direzione !== 'apertura') { inCima(); var h = schermo.querySelector('h1'); if (h) h.focus({ preventScroll: true }); }
   }
   function ridisegna() { disegna(attuale, ''); }
 
