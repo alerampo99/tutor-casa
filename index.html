@@ -633,7 +633,9 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
 .codice-regola { display: inline-flex; align-items: center; min-height: 30px; padding: 0 10px; border-radius: 10px; border: 1.5px solid rgba(27,34,40,0.35);
   font-family: var(--font-tecnico); font-size: 14px; font-weight: 700; }
 .foglio-azioni { flex: none; padding: 14px var(--space-8) 22px; padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px)); display: flex; }
-.foglio-azioni .pulsante-principale { flex: 1; }
+.foglio-azioni { flex-direction: column; gap: 10px; }
+.foglio-azioni .pulsante-principale, .foglio-azioni .pulsante-secondario { width: 100%; }
+.hub-testi .azioni-hero { flex-wrap: wrap; }
 html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
 
 @media (orientation: landscape) and (min-width: 900px) {
@@ -724,7 +726,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
 <script>
 (function () {
   'use strict';
-  var VERSIONE = '0.8.2';
+  var VERSIONE = '0.8.3';
   var $ = function (id) { return document.getElementById(id); };
 
   /* ================= Albero delle schermate (Documento, sezione 3) ================= */
@@ -798,7 +800,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     lavatrice: [
       { id: 'contatore',    nome: 'Contatore report' },
       { id: 'manutenzione', nome: 'Manutenzione',         titolo: 'Lavaggio a vuoto e filtro',     arriva: 'M5' },
-      { id: 'ultimo',       nome: 'Ultimo lavaggio',      titolo: 'Cosa hai lavato e come',        arriva: 'M3' },
+      { id: 'ultimo',       nome: 'Ultimo lavaggio',      titolo: 'Cosa hai lavato e come' },
       { id: 'esiti',        nome: 'Esiti medi',           titolo: 'Come vanno i lavaggi',          arriva: 'M4' },
       { id: 'rivedere',     nome: 'Standard da rivedere', titolo: 'Lavaggi con media sotto 3,5',   arriva: 'M4' },
       { id: 'periodo',      nome: 'Lavaggi del periodo',  titolo: 'Quanti lavaggi in settimana',   arriva: 'M4' },
@@ -832,6 +834,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
       return '<div class="riquadro contatore' + classe + '">' + anello(n, 15) +
         '<span class="testi"><span class="numero">' + String(n).padStart(2, '0') + '<small> / 15</small></span><span class="frase">report verso l’analisi</span></span></div>';
     }
+    if (id === 'ultimo') return riquadroUltimo(classe);
     if (id === 'database') {
       var S = stato.standard;
       if (!S.elenco.length) return '<div class="riquadro' + classe + '"><p class="etichetta">Database standard</p><p class="titolo-riquadro">Nessuno standard</p>' +
@@ -891,9 +894,9 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
       '<h2 class="titolo-riquadro" id="titolo-oggi">Cosa c’è da fare oggi</h2>' +
       '<p class="frase-spenta">Arriva in M5: le attività di tutte le categorie, da segnare fatte con un tocco.</p></section>';
     var protagonista = '<div class="pannello-hero protagonista" data-vai="' + cat + '">' + $('modello-manopola').innerHTML +
-      '<div class="protagonista-testi"><span class="etichetta"><span class="led" aria-hidden="true"></span>Nessun lavaggio</span>' +
+      '<div class="protagonista-testi"><span class="etichetta"><span class="led" aria-hidden="true"></span>' + (stato.lavaggio.inCorso ? 'In corso' : 'Nessun lavaggio in corso') + '</span>' +
         '<h2 class="titolo-pannello">Lavatrice</h2>' +
-        '<p class="frase-hero">Ancora nessun lavaggio registrato.</p>' +
+        '<p class="frase-hero">' + fraseLavatriceHome() + '</p>' +
         '<div class="azioni-hero"><a class="pulsante-principale" href="#' + cat + '">Apri la lavatrice</a>' +
         '<a class="pulsante-secondario" href="#lavaggi-standard">Nuovo lavaggio</a></div>' +
       '</div></div>';
@@ -1057,6 +1060,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
       var imp = {}; r[2].forEach(function (x) { imp[x.chiave] = x.valore; });
       stato.archivio.ultimoBackup = imp.ultimo_backup || null;
       leggiImpostazioniHome(imp);
+      leggiLavaggi(imp);
       stato.archivio.prove = r[0].sort(function (a, b) { return b.id - a.id; });
       stato.archivio.report = r[1];
     }).catch(function (e) {
@@ -1957,9 +1961,10 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     var s = SCHERMATE.lavatrice;
     var hero = '<section class="pannello-hero hub-stato" aria-labelledby="titolo-stato">' + $('modello-manopola').innerHTML +
       '<div class="hub-testi"><p class="etichetta"><span class="led" aria-hidden="true"></span>Stato</p>' +
+        (stato.lavaggio.inCorso ? statoInCorsoHub(stato.lavaggio.inCorso) :
         '<h2 class="titolo-stato" id="titolo-stato">Nessun lavaggio in corso</h2>' +
-        '<p class="frase-hero">Quando avvii un lavaggio, lo trovi qui.</p>' + statoStandardHub() +
-        '<div class="azioni-hero"><a class="pulsante-principale" href="#lavaggi-standard">Nuovo lavaggio</a></div>' +
+        '<p class="frase-hero">' + (stato.lavaggio.ultimo ? 'Ultimo: ' + esc(stato.lavaggio.ultimo.ID_Standard + ' ' + stato.lavaggio.ultimo.Nome) + ', finito il ' + quando(stato.lavaggio.ultimo.Fine) + '.' : 'Quando avvii un lavaggio, lo trovi qui.') + '</p>' + statoStandardHub() +
+        '<div class="azioni-hero"><a class="pulsante-principale" href="#lavaggi-standard">Nuovo lavaggio</a></div>') +
       '</div></section>';
     return '<div class="interna">' + intestazione(s) +
       '<div class="hub">' + hero + '<nav class="hub-tessere" aria-label="Funzioni della lavatrice">' + ORDINE_HUB.map(tesseraHub).join('') + '</nav></div></div>';
@@ -2073,13 +2078,13 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
       campoScheda('Opzioni', escluse, opz, 'group', false);
   }
   function esitiBozza(b) { return verificaCarico(b.carico); }
-  function esitoHtml(esiti) {
+  function esitoHtml(esiti, senzaSpiega) {
     if (!esiti.length) return '<div class="esito-carico" aria-live="polite"><div class="esito-ok">' + segnala('ok', 'Ok', '') + '<p>Nessun allerta per questo carico.</p></div></div>';
     var BOLLINO = { rosso: ['allerta', 'Allerta'], ambra: ['attenzione', 'Attenzione'], info: ['info', 'Info'] };
     return '<div class="esito-carico" aria-live="polite">' + esiti.map(function (x) {
       var bl = BOLLINO[x.livello];
       return '<div class="allerta-blocco con-spiega ' + x.livello + '"><div class="corpo"><div class="riga"><span class="bollino ' + bl[0] + '">' + bl[1] + '</span><span class="codice">' + x.regola + '</span></div>' +
-        '<p>' + esc(x.frase) + '</p></div><button class="tasto-spiega" type="button" data-spiega-regola="' + x.regola + '" aria-haspopup="dialog" aria-label="Spiegazione: ' + x.regola + '">?</button></div>';
+        '<p>' + esc(x.frase) + '</p></div>' + (senzaSpiega ? '' : '<button class="tasto-spiega" type="button" data-spiega-regola="' + x.regola + '" aria-haspopup="dialog" aria-label="Spiegazione: ' + x.regola + '">?</button>') + '</div>';
     }).join('') + '</div>';
   }
   function statoEsiti(esiti) {
@@ -2137,11 +2142,14 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
       '<div class="riquadro vuota"><p class="etichetta">Nessun lavaggio scelto</p><p class="titolo-riquadro">Scegli un lavaggio dall’elenco</p>' +
         '<a class="pulsante-principale" href="#lavaggi-standard">Apri i lavaggi standard</a></div></div>';
     var b = bozzaAttuale(), p = programma(b.programma), esiti = esitiBozza(b), oriz = schedaOrizzontale();
-    // Avvia arriva nella 0.8.3: per ora il pulsante è un segnaposto spento
-    var avvia = '<button class="pulsante-secondario" type="button" disabled title="Arriva nella 0.8.3" data-azione="avvia">Avvia</button>';
+    // D05, D08: Avvia crea lo stato in corso; con un allerta rosso prima chiede conferma
+    var inCorso = stato.lavaggio.inCorso;
+    var avvia = inCorso ? '<button class="pulsante-secondario" type="button" disabled data-azione="avvia">In corso</button>'
+      : '<button class="pulsante-principale" type="button" data-azione="avvia">Avvia</button>';
+    var statoAvvio = inCorso ? segnala('info', 'Un lavaggio è in corso', esc(inCorso.ID_Standard) + ': chiudilo dall’Hub prima di avviarne un altro') : statoEsiti(esiti);
     var testa = '<header class="intestazione"><button class="pulsante-servizio" type="button" data-azione="indietro" aria-label="Indietro, a Lavaggi standard">' + ICONE.indietro + '</button>' +
       '<div class="intestazione-testi"><p class="etichetta">L1.1 · Lavaggio standard ' + esc(st.ID) + '</p><h1 class="display" tabindex="-1">' + esc(st.Nome) + '</h1></div>' +
-      (oriz ? '<div class="avvio-testa" role="region" aria-label="Avvio"><div class="avvio-stato">' + statoEsiti(esiti) + '<span class="riepilogo-breve">' + riepilogoBozza(b, p) + '</span></div>' + avvia + '</div>' : '') + '</header>';
+      (oriz ? '<div class="avvio-testa" role="region" aria-label="Avvio"><div class="avvio-stato">' + statoAvvio + '<span class="riepilogo-breve">' + riepilogoBozza(b, p) + '</span></div>' + avvia + '</div>' : '') + '</header>';
     var nomeProg = '<h2 class="nome-programma"><span class="num">' + esc(b.programma) + '</span> · ' + esc(p ? p.Nome : 'Programma sconosciuto') + '</h2>';
     var html;
     if (oriz) {
@@ -2169,7 +2177,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
         '<span class="testi"><span class="titolo">Controllo del carico</span><span class="riassunto">' + esc(riass || 'Nessuna scelta') + '</span></span><span class="freccia">' + giu + '</span></button></h2>' +
         esitoHtml(esiti) + (b.aperto ? '<div id="carico-dettaglio">' + categorieCarico(b) + '</div>' : '<p class="suggerimento">Tocca per cambiare tessuti, colori, casi speciali, riempimento e additivi.</p>') + '</section>';
       html = '<div class="scheda">' + hero + carico + vaschetta(b, st, p) + checklist(b, st) + '</div>' +
-        '<div class="barra-avvio" role="region" aria-label="Avvio"><div class="riepilogo">' + statoEsiti(esiti) + '<span class="riepilogo-breve">' + esc(st.ID) + ' · ' + riepilogoBozza(b, p) + '</span></div>' + avvia + '</div>';
+        '<div class="barra-avvio" role="region" aria-label="Avvio"><div class="riepilogo">' + statoAvvio + '<span class="riepilogo-breve">' + esc(st.ID) + ' · ' + riepilogoBozza(b, p) + '</span></div>' + avvia + '</div>';
     }
     return '<div class="interna">' + testa + html + '</div>';
   }
@@ -2220,6 +2228,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     else if (d.azione === 'carico-apri') cambiaBozza(function (b) { b.aperto = !b.aperto; }, '[data-azione="carico-apri"]');
     else if (d.azione === 'scegli-programma') apriProgrammi();
     else if (d.spiegaRegola) spiegaRegola(d.spiegaRegola, t);
+    else if (d.azione === 'avvia') chiediAvvio(t);
   });
   // Nel foglio dei programmi: un tocco sceglie e chiude
   document.addEventListener('click', function (e) {
@@ -2231,6 +2240,103 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
   document.addEventListener('click', function (e) {
     var a = e.target.closest('[data-standard]');
     if (a) scegliStandard(a.dataset.standard);
+  });
+
+
+  /* ================= M3 · 0.8.3 · Avvio e lavaggio in corso (D05, D08) ================= */
+  // Il lavaggio in corso sta nelle impostazioni (chiave lavaggio_in_corso): non è un report e non entra nell'export.
+  // In M4 «Lavaggio finito» aprirà il report precompilato da qui; Allerta_Confermati passa al report.
+  stato.lavaggio = { inCorso: null, ultimo: null };
+  function jsonOppureNull(v) { try { return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+  function leggiLavaggi(imp) { stato.lavaggio.inCorso = jsonOppureNull(imp.lavaggio_in_corso); stato.lavaggio.ultimo = jsonOppureNull(imp.ultimo_lavaggio); }
+  function salvaLavaggio(chiave, valore) { return archivio.salva('impostazioni', { chiave: chiave, valore: valore ? JSON.stringify(valore) : '' }); }
+  function oraDi(iso) { var d = new Date(iso); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  function impostazioniLavaggio(x) { return 'Prog. ' + esc(x.Programma) + ', ' + etichettaTemp(x.Temp_C) + ', ' + (x.Centrifuga_Giri === 0 ? 'senza centrifuga' : x.Centrifuga_Giri + ' giri'); }
+  function mancano(x) {
+    var min = Math.round((new Date(x.Fine_Prevista) - Date.now()) / 60000);
+    return min > 0 ? 'mancano circa ' + (min >= 60 ? Math.floor(min / 60) + ' h' + (min % 60 ? ' ' + (min % 60) + ' min' : '') : min + ' min') : 'dovrebbe aver finito';
+  }
+  function statoInCorsoHub(x) {
+    return '<h2 class="titolo-stato" id="titolo-stato">Lavaggio in corso</h2>' +
+      '<p class="frase-hero">' + esc(x.ID_Standard + ' · ' + x.Nome) + ' · ' + impostazioniLavaggio(x) + '</p>' +
+      segnala('info', 'Fine ' + oraDi(x.Fine_Prevista), 'avviato alle ' + oraDi(x.Avvio) + ', ' + mancano(x)) +
+      ((x.Allerta_Confermati || []).length ? segnala('allerta', 'Allerta confermato', x.Allerta_Confermati.join(' · ')) : '') +
+      '<div class="azioni-hero"><button class="pulsante-principale" type="button" data-azione="lavaggio-finito">Lavaggio finito</button>' +
+      '<button class="pulsante-secondario" type="button" data-azione="annulla-avvio">Annulla avvio</button></div>';
+  }
+  function fraseLavatriceHome() {
+    var x = stato.lavaggio.inCorso, u = stato.lavaggio.ultimo;
+    if (x) return esc(x.ID_Standard + ' ' + x.Nome) + ', fine prevista alle ' + oraDi(x.Fine_Prevista) + '.';
+    if (u) return 'Ultimo: ' + esc(u.ID_Standard + ' ' + u.Nome) + ', ' + quando(u.Fine) + '.';
+    return 'Ancora nessun lavaggio registrato.';
+  }
+  function riquadroUltimo(classe) {
+    var x = stato.lavaggio.inCorso, u = stato.lavaggio.ultimo, l = x || u;
+    if (!l) return '<div class="riquadro' + classe + '"><p class="etichetta">Ultimo lavaggio</p><p class="titolo-riquadro">Nessun lavaggio ancora</p>' +
+      segnala('info', 'Da fare', 'Avvialo da Nuovo lavaggio') + '</div>';
+    return '<div class="riquadro' + classe + '"><p class="etichetta">Ultimo lavaggio</p><p class="titolo-riquadro">' + esc(l.ID_Standard + ' · ' + l.Nome) + '</p>' +
+      (x ? segnala('info', 'In corso', 'fine prevista alle ' + oraDi(x.Fine_Prevista)) : segnala('ok', 'Finito', quando(u.Fine))) +
+      '<p class="frase">' + impostazioniLavaggio(l) + '</p></div>';
+  }
+  // Chiude il foglio (che occupa una voce della cronologia) e poi esegue: così la navigazione dopo non si incrocia col «indietro»
+  function dopoFoglio(fn) {
+    if ($('foglio').open && history.state && history.state.foglio) {
+      window.addEventListener('popstate', function una() { window.removeEventListener('popstate', una); setTimeout(fn, 0); });
+      history.back();
+    } else { nascondiFoglio(); fn(); }
+  }
+  function chiediAvvio(da) {
+    var b = stato.scheda.bozza; if (!b || stato.lavaggio.inCorso) return;
+    var rossi = esitiBozza(b).filter(function (x) { return x.livello === 'rosso'; });
+    if (!rossi.length) { avviaLavaggio([]); return; }
+    apriFoglio({ etichetta: 'Prima di avviare', titolo: rossi.length === 1 ? 'C’è un allerta rosso' : 'Ci sono ' + rossi.length + ' allerta rossi',
+      breve: 'Rischio per la sicurezza o danno certo a capi o macchina. Se avvii lo stesso, ' + (rossi.length === 1 ? 'l’allerta resta' : 'gli allerta restano') + ' salvati nel lavaggio (D08).',
+      html: esitoHtml(rossi, true),
+      azioni: '<button class="pulsante-principale" type="button" data-azione="torna-carico">Torna al carico</button>' +
+        '<button class="pulsante-secondario" type="button" data-azione="avvia-comunque">Avvia comunque</button>' }, da);
+  }
+  function avviaLavaggio(confermati) {
+    var st = standardScelto(), b = stato.scheda.bozza; if (!st || !b) return Promise.resolve();
+    var p = programma(b.programma), adesso = new Date(), esiti = esitiBozza(b), durata = (p && p.Durata_Min) || 0;
+    var x = { Tipo: 'Standard', ID_Standard: st.ID, Nome: st.Nome, Versione_Standard: stato.standard.versione || '', Modello_Macchina: modelloAttuale(),
+      Programma: b.programma, Nome_Programma: p ? p.Nome : '', Temp_C: b.temp, Centrifuga_Giri: b.giri, Opzioni: b.opzioni.slice(), Carico: b.carico,
+      Allerta: codiciAllerta(esiti), Allerta_Confermati: confermati, Checklist_Fatte: b.spunte.filter(Boolean).length + '/' + b.spunte.length,
+      Avvio: adesso.toISOString(), Durata_Min: durata, Fine_Prevista: new Date(adesso.getTime() + durata * 60000).toISOString() };
+    return salvaLavaggio('lavaggio_in_corso', x).then(function () {
+      stato.lavaggio.inCorso = x; stato.scheda.bozza = null;
+      try { localStorage.removeItem('tc-bozza'); } catch (e) {}
+      location.replace('#lavatrice'); // al posto della Scheda: l'indietro dall'Hub torna all'elenco
+    });
+  }
+  function finisciLavaggio() {
+    var x = stato.lavaggio.inCorso; if (!x) return;
+    var u = JSON.parse(JSON.stringify(x)); u.Fine = new Date().toISOString();
+    return salvaLavaggio('ultimo_lavaggio', u).then(function () { return salvaLavaggio('lavaggio_in_corso', null); })
+      .then(function () { stato.lavaggio.ultimo = u; stato.lavaggio.inCorso = null; ridisegna(); var h = document.querySelector('#titolo-stato'); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } });
+  }
+  function chiediAnnulla(da) {
+    var x = stato.lavaggio.inCorso; if (!x) return;
+    apriFoglio({ etichetta: 'Lavaggio in corso', titolo: 'Annullare l’avvio?', breve: esc(x.ID_Standard + ' ' + x.Nome) + ' sparisce come se non fosse mai partito. Serve solo se l’hai avviato per errore.',
+      azioni: '<button class="pulsante-principale" type="button" data-azione="foglio-chiudi">Tieni il lavaggio</button>' +
+        '<button class="pulsante-secondario" type="button" data-azione="annulla-conferma">Annulla l’avvio</button>' }, da);
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-azione]'); if (!t) return;
+    var a = t.dataset.azione;
+    if (a === 'torna-carico') dopoFoglio(function () {
+      if (schedaOrizzontale()) vaiAPagina('scheda', 1);
+      else { cambiaBozza(function (b) { b.aperto = true; }); var c = document.querySelector('.scheda-carico'); if (c) c.scrollIntoView({ block: 'start' }); }
+      var f = document.querySelector('.scheda-carico .tasto-spiega, .scheda-carico .categoria'); if (f) f.focus({ preventScroll: true });
+    });
+    else if (a === 'avvia-comunque') {
+      var b = stato.scheda.bozza, codici = b ? esitiBozza(b).filter(function (x) { return x.livello === 'rosso'; }).map(function (x) { return x.regola; }) : [];
+      dopoFoglio(function () { avviaLavaggio(codici); });
+    }
+    else if (a === 'lavaggio-finito') finisciLavaggio();
+    else if (a === 'annulla-avvio') chiediAnnulla(t);
+    else if (a === 'annulla-conferma') dopoFoglio(function () {
+      salvaLavaggio('lavaggio_in_corso', null).then(function () { stato.lavaggio.inCorso = null; ridisegna(); });
+    });
   });
 
   /* ================= M3 · Guida rapida (L6, D47, D48) ================= */
@@ -2297,6 +2403,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
       (c.html || '') +
       ((c.codici || []).length ? '<p class="collegata"><span class="etichetta">Collegata a</span>' + c.codici.map(function (x) { return '<span class="codice-regola">' + esc(x) + '</span>'; }).join('') + '</p>' : '');
     $('foglio-corpo').scrollTop = 0;
+    $('foglio').querySelector('.foglio-azioni').innerHTML = c.azioni || '<button class="pulsante-principale" type="button" data-azione="foglio-chiudi">Chiudi</button>';
     foglio.ritorno = da || document.activeElement;
     if (!d.open) {
       d.showModal(); foglio.apertoIl = Date.now();
