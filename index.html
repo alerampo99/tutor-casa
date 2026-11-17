@@ -636,9 +636,24 @@ h3.gruppo-titolo { margin: var(--space-2) 0 0; }
 .foglio-azioni { flex-direction: column; gap: 10px; }
 .foglio-azioni .pulsante-principale, .foglio-azioni .pulsante-secondario { width: 100%; }
 .hub-testi .azioni-hero { flex-wrap: wrap; }
-.intestazione .cambia-lavaggio { flex: none; min-height: 48px; padding: 0 18px; font-size: 15px; }
-.cambia-fondo { display: none; order: 5; }
-@media (max-width: 640px) { .intestazione .cambia-lavaggio { display: none; } .cambia-fondo { display: flex; justify-content: center; } }
+.invito-manopola { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 0; border-radius: var(--radius-pill); cursor: pointer; font: inherit;
+  font-size: 14px; line-height: 18px; font-weight: 700; color: var(--ink); background: var(--panel-inset); text-align: left;
+  box-shadow: inset 2px 2px 5px rgba(84,100,116,0.35), inset -2px -2px 5px rgba(255,255,255,0.65); }
+.invito-manopola svg { flex: none; stroke: currentColor; }
+.foglio .scegli-altro { width: 100%; margin-bottom: 6px; }
+.simile { display: flex; flex-direction: column; align-items: inherit; gap: 8px; margin-top: 4px; }
+.p-man .simile { align-items: center; }
+.p-man .nome-programma { font-size: 24px; line-height: 28px; }
+.p-man .simile .segnalazione { justify-content: center; text-align: center; }
+.p-man .manopola-tasto .manopola { width: 190px; height: 190px; }
+.pagina-programma .p-man { gap: var(--space-3); }
+.usa-suggerimento { min-height: 44px; padding: 0 16px; font-size: 14px; }
+.prog-vuoto { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 32px; text-align: center; max-width: 520px; margin: 0 auto; }
+.prog-vuoto .etichetta { color: var(--ink-muted); }
+.pagina-programma.vuota, .scheda-hero.vuota { display: flex; align-items: center; justify-content: center; }
+.scheda.misura .scheda-carico { order: 0; }
+.altro-misura { display: flex; justify-content: center; margin-top: var(--space-6); }
+.esito-sfoglia .pallini.segnaposto { height: 40px; margin-top: -4px; }
 .esito-sfoglia { gap: 6px; }
 .esito-sfoglia .conta-allerta { color: var(--ink-muted); }
 .esito-sfoglia .sfoglia { margin: 0; }
@@ -737,7 +752,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
 <script>
 (function () {
   'use strict';
-  var VERSIONE = '0.8.4';
+  var VERSIONE = '0.8.6';
   var $ = function (id) { return document.getElementById(id); };
 
   /* ================= Albero delle schermate (Documento, sezione 3) ================= */
@@ -748,7 +763,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     'lavaggi-standard': { codice: 'L1',   titolo: 'Lavaggi standard',       genitore: 'lavatrice',        arriva: 'M3', testo: 'Elenco dei lavaggi settimanali e occasionali.' },
     // 0.8.4: il lavaggio scelto resta in memoria e la sua Scheda torna alla Home
     'scheda-lavaggio':  { codice: 'L1.1', titolo: 'Scheda lavaggio',        genitore: 'home',             arriva: 'M3', testo: 'Manopole, vaschetta, checklist e pulsante Avvia.' },
-    'su-misura':        { codice: 'L2',   titolo: 'Lavaggio su misura',     genitore: 'lavatrice',        arriva: 'M3', testo: 'Componi un lavaggio scegliendo tessuti, colori, sporco e carico.' },
+    'su-misura':        { codice: 'L2',   titolo: 'Lavaggio su misura',     genitore: 'home',        arriva: 'M3', testo: 'Componi un lavaggio scegliendo tessuti, colori, sporco e carico.' },
     report:             { codice: 'L3',   titolo: 'Report post-lavaggio',   genitore: 'lavatrice',        arriva: 'M4', testo: 'Voti, anomalie e note a fine lavaggio.' },
     registro:           { codice: 'L4',   titolo: 'Registro',               genitore: 'lavatrice',        arriva: 'M4', testo: 'Storico, export, import e statistiche dei lavaggi.',
                           figli: ['storico', 'export', 'import-standard', 'statistiche'] },
@@ -1081,7 +1096,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     }).then(function () {
       if (!navigator.storage || !navigator.storage.estimate) return;
       return navigator.storage.estimate().then(function (st) { stato.archivio.usatoKB = Math.round((st.usage || 0) / 1024); });
-    }).then(function () { if (['dati', 'home', 'profilo', 'database', 'lavatrice', 'guida', 'lavaggi-standard', 'scheda-lavaggio'].indexOf(attuale) >= 0) ridisegna(); });
+    }).then(function () { if (['dati', 'home', 'profilo', 'database', 'lavatrice', 'guida', 'lavaggi-standard', 'scheda-lavaggio', 'su-misura'].indexOf(attuale) >= 0) ridisegna(); });
   }
   function chiediProtezione() {
     if (!navigator.storage || !navigator.storage.persisted) { stato.archivio.protetto = false; return Promise.resolve(); }
@@ -1960,8 +1975,11 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     var s = SCHERMATE[id];
     if (id === 'lavaggi-standard' && stato.lavaggio.inCorso) return '<button class="tessera tessera-hub" type="button" disabled data-hub="' + id + '">' + ICONE_HUB[id] +
       '<span class="testi"><span class="nome">' + s.titolo + '</span><span class="etichetta">Dopo il lavaggio in corso</span></span></button>';
-    if (id === 'lavaggi-standard' && preparato()) return '<a class="tessera tessera-hub attiva" href="#scheda-lavaggio" data-hub="' + id + '">' + ICONE_HUB[id] +
-      '<span class="testi"><span class="nome">' + s.titolo + '</span><span class="descrizione">' + esc(preparato().ID) + ' preparato: apri la sua Scheda</span></span></a>';
+    var pr = preparato();
+    if (id === 'su-misura' && (stato.lavaggio.inCorso || (pr && !pr.misura))) return '<button class="tessera tessera-hub" type="button" disabled data-hub="' + id + '">' + ICONE_HUB[id] +
+      '<span class="testi"><span class="nome">' + s.titolo + '</span><span class="etichetta">' + (stato.lavaggio.inCorso ? 'Dopo il lavaggio in corso' : 'Dopo ' + esc(pr.ID)) + '</span></span></button>';
+    if ((id === 'lavaggi-standard' || id === 'su-misura') && pr) return '<a class="tessera tessera-hub attiva" href="' + hrefPreparato() + '" data-hub="' + id + '">' + ICONE_HUB[id] +
+      '<span class="testi"><span class="nome">' + s.titolo + '</span><span class="descrizione">' + esc(nomePreparato(pr)) + ' preparato: riaprilo</span></span></a>';
     if (s.arriva !== 'M3') return '<button class="tessera tessera-hub" type="button" disabled data-hub="' + id + '">' + ICONE_HUB[id] +
       '<span class="testi"><span class="nome">' + s.titolo + '</span><span class="etichetta">Arriva in ' + s.arriva + '</span></span></button>';
     return '<a class="tessera tessera-hub attiva" href="#' + id + '" data-hub="' + id + '">' + ICONE_HUB[id] +
@@ -1993,14 +2011,72 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
   try { stato.scheda.id = localStorage.getItem('tc-scheda'); } catch (e) {}
   function scegliStandard(id) {
     stato.scheda.id = id; stato.home.pagina.scheda = 0; stato.home.pagina.allerta = 0;
-    var st = standardScelto(); stato.scheda.bozza = st ? nuovaBozza(st) : null;
+    var st = id === ID_MISURA ? null : standardScelto(); stato.scheda.bozza = id === ID_MISURA ? bozzaMisura() : st ? nuovaBozza(st) : null;
     try { localStorage.setItem('tc-scheda', id); } catch (e) {}
     salvaBozza();
   }
   function scartaPreparato() { stato.scheda.id = null; stato.scheda.bozza = null; try { localStorage.removeItem('tc-scheda'); localStorage.removeItem('tc-bozza'); } catch (e) {} }
   // Un lavaggio è «in memoria» quando è preparato (scelto, non ancora avviato) o in corso
-  function preparato() { return !stato.lavaggio.inCorso && stato.scheda.id && standardScelto() ? standardScelto() : null; }
-  function standardScelto() { var id = stato.scheda.id; return stato.standard.elenco.filter(function (x) { return x.ID === id; })[0] || null; }
+  function preparato() {
+    var st = !stato.lavaggio.inCorso && stato.scheda.id ? standardScelto() : null;
+    if (st && st.misura && caricoVuoto(stato.scheda.bozza.carico)) return null; // un su misura appena aperto non occupa ancora la lavatrice
+    return st;
+  }
+  function caricoVuoto(c) { return !c.tessuti.length && !c.colori.length && !c.speciali.length && !c.additivi.length && !c.riempimento && !c.sporco; }
+  function standardScelto() { var id = stato.scheda.id; if (id === ID_MISURA) return stato.scheda.bozza ? stMisura() : null; return stato.standard.elenco.filter(function (x) { return x.ID === id; })[0] || null; }
+
+  /* ---------- M3 · 0.8.6 · Lavaggio su misura (L2): si compone il carico, l'app propone lo standard più simile ---------- */
+  var ID_MISURA = 'SM';
+  function trovaStandard(id) { return stato.standard.elenco.filter(function (x) { return x.ID === id; })[0] || null; }
+  // Una «ricetta» che si comporta come uno standard: i dati di lavaggio vengono dallo standard più simile
+  function stMisura() {
+    var b = stato.scheda.bozza || {}, base = b.base ? trovaStandard(b.base) : null;
+    return { ID: ID_MISURA, Nome: 'Lavaggio su misura', misura: true, base: base,
+      Programma: base ? base.Programma : '', Temp_C: base ? base.Temp_C : null, Centrifuga_Giri: base ? base.Centrifuga_Giri : null,
+      Detersivo: base ? base.Detersivo : '', Foglietti_Acchiappacolore: base ? base.Foglietti_Acchiappacolore : '',
+      Checklist: base ? base.Checklist : ['Tasche vuote', 'Zip e velcro chiusi'], Note_Speciali: base ? base.Note_Speciali : '', Capi_Inclusi: '' };
+  }
+  function bozzaMisura() {
+    return { id: ID_MISURA, tipo: 'misura', programma: null, temp: null, giri: null, opzioni: [], ritardo: 0, base: null, manuale: false,
+      carico: { tessuti: [], colori: [], speciali: [], riempimento: '', additivi: [], sporco: '' }, spunte: [false, false], categoria: 'tessuti', aperto: true };
+  }
+  // Quello che uno standard dice del suo carico, letto anche dal nome e dai capi inclusi
+  function caricoTestoStandard(st) {
+    var c = caricoDaStandard(st), t = ((st.Nome || '') + ' ' + (st.Capi_Inclusi || '')).toLowerCase();
+    [['cotone', /coton|camici|lenzuol|federe|pigiam/], ['sintetico', /sintetic/], ['jeans', /jeans|tela|velluto/], ['spugna', /spugna|asciugaman|accappatoi|teli/],
+     ['pile', /pile|fleece|microfibra/], ['garzato', /felp|flanell|garzat/], ['delicati', /delicat|lingerie|viscosa|reggiseni/]].forEach(function (r) {
+      if (r[1].test(t) && c.tessuti.indexOf(r[0]) < 0) c.tessuti.push(r[0]); });
+    [['bianchi', /bianch/], ['chiari', /chiar/], ['colorati', /colorat/], ['scuri', /scur|jeans/]].forEach(function (r) {
+      if (r[1].test(t) && c.colori.indexOf(r[0]) < 0) c.colori.push(r[0]); });
+    return c;
+  }
+  function somiglianza(c, st) {
+    var cs = caricoTestoStandard(st);
+    function j(a, b) { if (!a.length || !b.length) return 0; var i = a.filter(function (x) { return b.indexOf(x) >= 0; }).length; return i / (a.length + b.length - i); }
+    var t = Number(st.Temp_C) || 0, punti = 3 * j(c.tessuti, cs.tessuti) + 2 * j(c.colori, cs.colori) + (c.riempimento && c.riempimento === cs.riempimento ? 1 : 0);
+    if (c.sporco === 'Molto') punti += 0.4 * t / 90; else if (c.sporco === 'Poco') punti += 0.4 * (1 - t / 90);
+    if (st.ID[0] === 'S') punti += 0.2; // meglio un settimanale, pensato per i carichi di tutti i giorni
+    // Gli standard per un capo solo (copriletto, scarpe, lavaggio a vuoto…) valgono solo se anche il carico è così
+    if (['1 pezzo', 'Pochi pezzi', 'Max 2 paia', 'A vuoto'].indexOf(cs.riempimento) >= 0 && c.riempimento !== cs.riempimento) punti -= c.riempimento ? 1 : 0.3;
+    return punti;
+  }
+  function standardPiuSimile(c) {
+    if (!c.tessuti.length) return null;
+    var migliore = null, max = 0.5;
+    stato.standard.elenco.forEach(function (st) { var v = somiglianza(c, st); if (v > max) { max = v; migliore = st; } });
+    return migliore;
+  }
+  function aggiornaSuggerimento(b) {
+    var st = standardPiuSimile(b.carico), prima = b.base;
+    b.base = st ? st.ID : null;
+    if (!b.manuale) {
+      if (st) { b.programma = String(st.Programma); b.temp = st.Temp_C; b.giri = st.Centrifuga_Giri; }
+      else { b.programma = null; b.temp = null; b.giri = null; }
+      var p = programma(b.programma), oAmm = opzioniAmmesse(p);
+      b.opzioni = b.opzioni.filter(function (o) { return oAmm.indexOf(o) >= 0; });
+    }
+    if (b.base !== prima) { var n = stMisura().Checklist.length; b.spunte = b.spunte.slice(0, n); while (b.spunte.length < n) b.spunte.push(false); }
+  }
   function avvisiPerStandard() {
     var mappa = {};
     if (stato.standard.elenco.length && stato.profilo.programmi.length) controllaStandard(stato.standard.elenco, stato.profilo).forEach(function (x) {
@@ -2028,9 +2104,9 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     var inMem = stato.lavaggio.inCorso, pr = preparato();
     if (inMem || pr) return '<div class="interna">' + intestazione(s) +
       '<div class="riquadro vuota"><p class="etichetta">' + (inMem ? 'Lavaggio in corso' : 'Lavaggio preparato') + '</p><p class="titolo-riquadro">' +
-        esc(inMem ? inMem.ID_Standard + ' · ' + inMem.Nome : pr.ID + ' · ' + pr.Nome) + '</p>' +
-        segnala('info', 'Un lavaggio alla volta', inMem ? 'Chiudi quello in corso dall’Hub per sceglierne un altro' : 'Per sceglierne un altro usa “Cambia lavaggio” nella sua Scheda') +
-        (inMem ? '<a class="pulsante-principale" href="#lavatrice">Apri l’Hub</a>' : '<a class="pulsante-principale" href="#scheda-lavaggio">Apri la Scheda</a>') + '</div></div>';
+        esc(inMem ? inMem.ID_Standard + ' · ' + inMem.Nome : nomePreparato(pr)) + '</p>' +
+        segnala('info', 'Un lavaggio alla volta', inMem ? 'Chiudi quello in corso dall’Hub per sceglierne un altro' : 'Per sceglierne un altro tocca la manopola nella sua Scheda') +
+        (inMem ? '<a class="pulsante-principale" href="#lavatrice">Apri l’Hub</a>' : '<a class="pulsante-principale" href="' + hrefPreparato() + '">Riapri il lavaggio</a>') + '</div></div>';
     var avvisi = avvisiPerStandard();
     function gruppo(lettera, nome) {
       var righe = S.elenco.filter(function (x) { return x.ID[0] === lettera; });
@@ -2039,6 +2115,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     }
     return '<div class="interna">' + intestazione(s) +
       '<div class="elenco-standard">' + gruppo('S', 'Settimanali') + gruppo('O', 'Occasionali') + '</div>' +
+      '<div class="altro-misura"><a class="pulsante-secondario" href="#su-misura">Nessuno va bene? Lavaggio su misura</a></div>' +
       '<p class="etichetta guida-piede">Standard ' + esc(S.versione || '') + '. Tocca un lavaggio per aprire la sua scheda.</p></div>';
   }
   /* ---------- Scheda lavaggio (L1.1): bozza del lavaggio, tavola approvata ---------- */
@@ -2067,13 +2144,16 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
   try { stato.scheda.bozza = JSON.parse(localStorage.getItem('tc-bozza') || 'null'); } catch (e) { stato.scheda.bozza = null; }
   function bozzaAttuale() {
     var st = standardScelto(); if (!st) return null;
+    if (st.misura) return stato.scheda.bozza;
     if (!stato.scheda.bozza || stato.scheda.bozza.id !== st.ID) { stato.scheda.bozza = nuovaBozza(st); salvaBozza(); }
     return stato.scheda.bozza;
   }
   var GRUPPI_CARICO = [['tessuti', 'Tessuti', 'Scegli tutti i tessuti del carico, anche quelli di un solo capo.'], ['colori', 'Colori', 'I colori presenti nel carico.'],
     ['speciali', 'Casi speciali', 'Capi che chiedono attenzioni particolari.'], ['riempimento', 'Riempimento', 'Quanto è pieno il cestello.'], ['additivi', 'Additivi', 'Tutto quello che metti in vaschetta o in ammollo.']];
+  var SPORCO = ['Poco', 'Normale', 'Molto'];
   function sceltiGruppo(c, g) {
     if (g === 'riempimento') return c.riempimento || '';
+    if (g === 'sporco') return c.sporco || '';
     return (c[g] || []).map(function (id) { return CARICO[g][id]; }).join(', ');
   }
   function oraFine(minuti) { var d = new Date(Date.now() + minuti * 60000); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
@@ -2103,11 +2183,12 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     var temp = valoriMacchina('Temperature').map(Number).map(function (t) { return chipScelta(etichettaTemp(t), t === b.temp, tAmm.indexOf(t) < 0, 'data-temp="' + t + '"'); }).join('');
     var giri = valoriMacchina('Giri').map(Number).map(function (g) { return chipScelta(etichettaGiri(g), g === b.giri, gAmm.indexOf(g) < 0, 'data-giri="' + g + '"'); }).join('');
     var opz = valoriMacchina('Opzioni').sort(function (x, y) { return (oAmm.indexOf(x) < 0) - (oAmm.indexOf(y) < 0); }).map(function (o) { return tagScelta(o, b.opzioni.indexOf(o) >= 0, oAmm.indexOf(o) < 0, 'data-opzione="' + esc(o) + '"'); }).join('');
-    var escluse = (p && p.Opzioni_Escluse && p.Opzioni_Escluse.length) ? 'Spente: non col Prog. ' + esc(p.Programma) : '';
+    var escluse = p && oAmm.length < valoriMacchina('Opzioni').length ? 'Spente: non col Prog. ' + esc(p.Programma) : '';
     var rit = b.opzioni.indexOf('Partenza Ritardata') >= 0 ? campoScheda('Partenza ritardata · ore', 'parte alle ' + oraDi(partenzaBozza(b)), ritardiMacchina().map(function (h) {
       return chipScelta(h + ' h', b.ritardo === h, false, 'data-ritardo="' + h + '"'); }).join(''), 'radiogroup', false) : '';
-    return campoScheda('Temperatura', 'Standard ' + etichettaTemp(st.Temp_C), temp, 'radiogroup', true) +
-      campoScheda('Centrifuga · giri', 'Standard ' + etichettaGiri(st.Centrifuga_Giri), giri, 'radiogroup', true) +
+    var rif = st.misura ? 'Suggerito ' : 'Standard ';
+    return campoScheda('Temperatura', st.Temp_C == null ? '' : rif + etichettaTemp(st.Temp_C), temp, 'radiogroup', true) +
+      campoScheda('Centrifuga · giri', st.Centrifuga_Giri == null ? '' : rif + etichettaGiri(st.Centrifuga_Giri), giri, 'radiogroup', true) +
       campoScheda('Opzioni', escluse, opz, 'group', false) + rit;
   }
   function esitiBozza(b) { return verificaCarico(b.carico); }
@@ -2121,7 +2202,8 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
         '<p>' + esc(x.frase) + '</p></div>' + (senzaSpiega ? '' : '<button class="tasto-spiega" type="button" data-spiega-regola="' + x.regola + '" aria-haspopup="dialog" aria-label="Spiegazione: ' + x.regola + '">?</button>') + '</div>';
     }
     // 0.8.4: nella Scheda gli allerta si sfogliano (uno per pagina, prima i rossi); nella conferma restano in elenco
-    if (senzaSpiega || esiti.length < 2) return '<div class="esito-carico" aria-live="polite">' + esiti.map(blocco).join('') + '</div>';
+    if (senzaSpiega) return '<div class="esito-carico" aria-live="polite">' + esiti.map(blocco).join('') + '</div>';
+    if (esiti.length === 1) return '<div class="esito-carico esito-sfoglia" aria-live="polite"><p class="etichetta conta-allerta">1 avviso sul carico</p>' + blocco(esiti[0]) + '<div class="pallini segnaposto" aria-hidden="true"></div></div>';
     var i = Math.min(stato.home.pagina.allerta || 0, esiti.length - 1); stato.home.pagina.allerta = i;
     return '<div class="esito-carico esito-sfoglia" aria-live="polite"><p class="etichetta conta-allerta">' + esiti.length + ' avvisi sul carico · sfoglia</p>' +
       sfoglia('allerta', 'Avvisi sul carico', esiti.map(blocco), i) + '</div>';
@@ -2133,18 +2215,20 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     return segnala('ok', 'Pronto', esiti.length ? 'Solo consigli' : 'Nessun allerta');
   }
   function categorieCarico(b) {
-    var c = b.carico, g = GRUPPI_CARICO.filter(function (x) { return x[0] === b.categoria; })[0] || GRUPPI_CARICO[0];
-    var cat = GRUPPI_CARICO.map(function (x) {
+    var gruppi = b.tipo === 'misura' ? GRUPPI_CARICO.slice(0, 3).concat([['sporco', 'Sporco', 'Quanto sono sporchi i capi: aiuta a scegliere temperatura e programma.']], GRUPPI_CARICO.slice(3)) : GRUPPI_CARICO;
+    var c = b.carico, g = gruppi.filter(function (x) { return x[0] === b.categoria; })[0] || gruppi[0];
+    var cat = gruppi.map(function (x) {
       var sc = sceltiGruppo(c, x[0]);
       return '<button class="categoria" type="button" role="tab" id="cat-' + x[0] + '" data-categoria="' + x[0] + '" aria-selected="' + (x[0] === g[0]) + '" aria-controls="parametri-carico">' +
         '<span class="nome">' + x[1] + '</span><span class="scelti' + (sc ? '' : ' nessuno') + '">' + (sc ? esc(sc) : 'Nessuno') + '</span></button>';
     }).join('');
     var voci = g[0] === 'riempimento'
       ? CARICO.riempimento.map(function (v) { return chipScelta(v, c.riempimento === v, false, 'data-riempimento="' + v + '"'); }).join('')
+      : g[0] === 'sporco' ? SPORCO.map(function (v) { return chipScelta(v, c.sporco === v, false, 'data-sporco="' + v + '"'); }).join('')
       : Object.keys(CARICO[g[0]]).map(function (id) { return tagScelta(CARICO[g[0]][id], c[g[0]].indexOf(id) >= 0, false, 'data-carico="' + g[0] + ':' + id + '"'); }).join('');
     return '<div class="carico-corpo"><div class="categorie" role="tablist" aria-label="Categorie del carico" aria-orientation="vertical">' + cat + '</div>' +
       '<div class="parametri" id="parametri-carico" role="tabpanel" aria-labelledby="cat-' + g[0] + '"><div class="pannello-testa"><h3>' + g[1] + '</h3><p>' + g[2] + '</p></div>' +
-      '<div class="scelte" role="' + (g[0] === 'riempimento' ? 'radiogroup' : 'group') + '" aria-label="' + g[1] + '">' + voci + '</div></div></div>';
+      '<div class="scelte" role="' + (g[0] === 'riempimento' || g[0] === 'sporco' ? 'radiogroup' : 'group') + '" aria-label="' + g[1] + '">' + voci + '</div></div></div>';
   }
   function vaschetta(b, st, p) {
     var add = b.carico.additivi, ammorb;
@@ -2181,63 +2265,79 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
       (ritardoBozza(b) ? ' · parte ' + oraDi(partenzaBozza(b)) : '') + (p && p.Durata_Min ? ' · fine ' + oraDi(fineBozza(b, p)) : '');
   }
   function schedaOrizzontale() { return window.matchMedia('(orientation: landscape) and (min-width: 900px)').matches; }
-  function disegnaScheda() {
-    var s = SCHERMATE['scheda-lavaggio'], st = standardScelto();
+  function disegnaSuMisura() {
+    var s = SCHERMATE['su-misura'], x = stato.lavaggio.inCorso, pr = preparato();
+    if (x || (pr && !pr.misura)) return '<div class="interna">' + intestazione(s) +
+      '<div class="riquadro vuota"><p class="etichetta">' + (x ? 'Lavaggio in corso' : 'Lavaggio preparato') + '</p><p class="titolo-riquadro">' + esc(x ? x.ID_Standard + ' · ' + x.Nome : pr.ID + ' · ' + pr.Nome) + '</p>' +
+        segnala('info', 'Un lavaggio alla volta', x ? 'Chiudi quello in corso dall’Hub per comporne un altro' : 'Per comporre un su misura cambia lavaggio dalla manopola della sua Scheda') +
+        (x ? '<a class="pulsante-principale" href="#lavatrice">Apri l’Hub</a>' : '<a class="pulsante-principale" href="#scheda-lavaggio">Apri la Scheda</a>') + '</div></div>';
+    if (!pr && !(stato.scheda.id === ID_MISURA && stato.scheda.bozza)) scegliStandard(ID_MISURA);
+    return disegnaScheda(true);
+  }
+  function disegnaScheda(misura) {
+    var s = SCHERMATE[misura ? 'su-misura' : 'scheda-lavaggio'], st = standardScelto();
+    if (!misura && st && st.misura) return '<div class="interna">' + intestazione(s) +
+      '<div class="riquadro vuota"><p class="etichetta">Lavaggio preparato</p><p class="titolo-riquadro">Su misura</p><a class="pulsante-principale" href="#su-misura">Apri il su misura</a></div></div>';
     if (!st) return '<div class="interna">' + intestazione(s) +
       '<div class="riquadro vuota"><p class="etichetta">Nessun lavaggio scelto</p><p class="titolo-riquadro">Scegli un lavaggio dall’elenco</p>' +
         '<a class="pulsante-principale" href="#lavaggi-standard">Apri i lavaggi standard</a></div></div>';
     var b = bozzaAttuale(), p = programma(b.programma), esiti = esitiBozza(b), oriz = schedaOrizzontale();
     // D05, D08: Avvia crea lo stato in corso; con un allerta rosso prima chiede conferma
     var inCorso = stato.lavaggio.inCorso;
+    var vuoto = misura && !b.programma;
     var avvia = inCorso ? '<button class="pulsante-secondario" type="button" disabled data-azione="avvia">In corso</button>'
+      : vuoto ? '<button class="pulsante-secondario" type="button" disabled data-azione="avvia">Avvia</button>'
       : '<button class="pulsante-principale" type="button" data-azione="avvia">Avvia</button>';
-    var statoAvvio = inCorso ? segnala('info', 'Un lavaggio è in corso', esc(inCorso.ID_Standard) + ': chiudilo dall’Hub prima di avviarne un altro') : statoEsiti(esiti);
+    var statoAvvio = inCorso ? segnala('info', 'Un lavaggio è in corso', esc(inCorso.ID_Standard) + ': chiudilo dall’Hub prima di avviarne un altro')
+      : vuoto ? segnala('info', 'Componi il carico', 'scegli almeno i tessuti') : statoEsiti(esiti);
+    var simile = misura && st.base ? '<div class="simile">' + segnala(b.manuale ? 'attenzione' : 'info', b.manuale ? 'Cambiato da te' : 'Suggerito', 'simile a ' + esc(st.base.ID + ' · ' + st.base.Nome)) +
+      (b.manuale ? '<button class="pulsante-secondario usa-suggerimento" type="button" data-azione="usa-suggerimento">Usa il suggerimento</button>' : '') + '</div>' : '';
+    var progVuoto = '<div class="prog-vuoto"><p class="etichetta">Programma</p><p class="titolo-riquadro">Arriva dal carico</p><p class="suggerimento">Scegli almeno i tessuti: l’app propone il programma dello standard più simile, e lo puoi cambiare.</p></div>';
     var testa = '<header class="intestazione"><button class="pulsante-servizio" type="button" data-azione="indietro" aria-label="Indietro, alla Home">' + ICONE.indietro + '</button>' +
-      '<div class="intestazione-testi"><p class="etichetta">L1.1 · Lavaggio standard ' + esc(st.ID) + '</p><h1 class="display" tabindex="-1">' + esc(st.Nome) + '</h1></div>' +
-      '<button class="pulsante-secondario cambia-lavaggio" type="button" data-azione="cambia-lavaggio">Cambia lavaggio</button>' +
-      (oriz ? '<div class="avvio-testa" role="region" aria-label="Avvio"><div class="avvio-stato">' + statoAvvio + '<span class="riepilogo-breve">' + riepilogoBozza(b, p) + '</span></div>' + avvia + '</div>' : '') + '</header>';
+      '<div class="intestazione-testi"><p class="etichetta">' + (misura ? 'L2 · Composto da te' : 'L1.1 · Lavaggio standard ' + esc(st.ID)) + '</p><h1 class="display" tabindex="-1">' + esc(st.Nome) + '</h1></div>' +
+      (oriz ? '<div class="avvio-testa" role="region" aria-label="Avvio"><div class="avvio-stato">' + statoAvvio + (vuoto ? '' : '<span class="riepilogo-breve">' + riepilogoBozza(b, p) + '</span>') + '</div>' + avvia + '</div>' : '') + '</header>';
     var nomeProg = '<h2 class="nome-programma"><span class="num">' + esc(b.programma) + '</span> · ' + esc(p ? p.Nome : 'Programma sconosciuto') + '</h2>';
     var html;
     if (oriz) {
       var info = [['Durata', p ? durataTesto(p.Durata_Min) : ''], ['Partenza', ritardoBozza(b) ? 'alle ' + oraDi(partenzaBozza(b)) + ', fra ' + ritardoBozza(b) + ' h' : ''], ['Fine prevista', p && p.Durata_Min ? oraDi(fineBozza(b, p)) : ''], ['Carico massimo', p && p.Carico_Max_Kg ? String(p.Carico_Max_Kg).replace('.', ',') + ' kg' : (p && p.Carico_Max_Paia ? p.Carico_Max_Paia + ' paia' : '')], ['Detersivo', st.Detersivo || '']]
         .filter(function (x) { return x[1]; }).map(function (x) { return '<div class="info-riga"><span class="etichetta">' + x[0] + '</span><span class="valore">' + esc(x[1]) + '</span></div>'; }).join('');
       var rossi = esiti.filter(function (x) { return x.livello !== 'info'; }).length;
-      var pagProg = '<section class="pannello-hero pagina-programma" aria-label="Programma e impostazioni">' +
-        '<div class="p-man">' + manopolaScheda(b.programma, p) + '<div class="testi"><p class="etichetta">Programma</p>' + nomeProg + '<p class="suggerimento">Tocca la manopola per cambiarlo.</p></div></div>' +
+      var pagProg = vuoto ? '<section class="pannello-hero pagina-programma vuota" aria-label="Programma">' + progVuoto + '</section>' : '<section class="pannello-hero pagina-programma" aria-label="Programma e impostazioni">' +
+        '<div class="p-man">' + manopolaScheda(b.programma, p) + '<div class="testi"><p class="etichetta">Programma</p>' + nomeProg + simile + '<button class="invito-manopola" type="button" data-azione="scegli-programma" aria-haspopup="dialog"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"></path><path d="M20 4v5h-5"></path></svg>Cambia programma o lavaggio</button></div></div>' +
         '<div class="p-impost">' + campiProgramma(b, st, p) + '</div>' +
         '<div class="p-info"><p class="etichetta">' + esc(p ? p.Descrizione || p.Gruppo || '' : '') + '</p>' + info +
-          (rossi ? segnala(esiti.some(function (x) { return x.livello === 'rosso'; }) ? 'allerta' : 'attenzione', 'Carico: ' + rossi + (rossi === 1 ? ' avviso' : ' avvisi'), 'sfoglia →') : segnala('ok', 'Carico ok', '')) + '</div></section>';
+          (rossi ? segnala(esiti.some(function (x) { return x.livello === 'rosso'; }) ? 'allerta' : 'attenzione', 'Carico: ' + rossi + (rossi === 1 ? ' avviso' : ' avvisi'), misura ? '← sfoglia' : 'sfoglia →') : segnala('ok', 'Carico ok', '')) + '</div></section>';
       var pagCarico = '<section class="pannello-scheda pagina-carico scheda-carico" aria-labelledby="t-carico">' +
-        '<div class="carico-testa"><div class="pannello-testa"><h2 id="t-carico">Controllo del carico</h2><p>Compilato dallo standard: scegli una categoria a sinistra per cambiarla.</p></div>' + esitoHtml(esiti) + '</div>' +
+        '<div class="carico-testa"><div class="pannello-testa"><h2 id="t-carico">' + (misura ? 'Il tuo carico' : 'Controllo del carico') + '</h2><p>' + (misura ? 'Scegli a sinistra una categoria alla volta: tessuti, colori, sporco e il resto.' : 'Compilato dallo standard: scegli una categoria a sinistra per cambiarla.') + '</p></div>' + esitoHtml(esiti) + '</div>' +
         categorieCarico(b) + '</section>';
       if (stato.home.pagina.scheda == null) stato.home.pagina.scheda = 0;
-      html = '<div class="scheda oriz">' + sfoglia('scheda', 'Scheda lavaggio', [pagProg, pagCarico], stato.home.pagina.scheda) +
+      html = '<div class="scheda oriz">' + sfoglia('scheda', misura ? 'Lavaggio su misura' : 'Scheda lavaggio', misura ? [pagCarico, pagProg] : [pagProg, pagCarico], stato.home.pagina.scheda) +
         '<div class="scheda-sotto">' + vaschetta(b, st, p) + checklist(b, st) + '</div></div>';
     } else {
-      var hero = '<section class="pannello-hero scheda-hero" aria-label="Programma e impostazioni"><div class="scheda-programma">' + manopolaScheda(b.programma, p) +
-        '<div class="testi"><p class="etichetta">Programma</p>' + nomeProg + '<p class="dati-programma">' + esc([p && p.Descrizione, p && p.Carico_Max_Kg ? 'fino a ' + String(p.Carico_Max_Kg).replace('.', ',') + ' kg' : '', p ? durataTesto(p.Durata_Min) : ''].filter(Boolean).join(' · ')) + '</p>' +
-        '<p class="suggerimento">Tocca la manopola per cambiare programma.</p></div></div><hr class="divisore">' + campiProgramma(b, st, p) + '</section>';
-      var riass = GRUPPI_CARICO.map(function (x) { return sceltiGruppo(b.carico, x[0]); }).filter(Boolean).join(' · ');
+      var hero = vuoto ? '<section class="pannello-hero scheda-hero vuota" aria-label="Programma">' + progVuoto + '</section>' : '<section class="pannello-hero scheda-hero" aria-label="Programma e impostazioni"><div class="scheda-programma">' + manopolaScheda(b.programma, p) +
+        '<div class="testi"><p class="etichetta">Programma</p>' + nomeProg + simile + '<p class="dati-programma">' + esc([p && p.Descrizione, p && p.Carico_Max_Kg ? 'fino a ' + String(p.Carico_Max_Kg).replace('.', ',') + ' kg' : '', p ? durataTesto(p.Durata_Min) : ''].filter(Boolean).join(' · ')) + '</p>' +
+        '<button class="invito-manopola" type="button" data-azione="scegli-programma" aria-haspopup="dialog"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"></path><path d="M20 4v5h-5"></path></svg>Cambia programma o lavaggio</button></div></div><hr class="divisore">' + campiProgramma(b, st, p) + '</section>';
+      var riass = GRUPPI_CARICO.concat([['sporco']]).map(function (x) { return sceltiGruppo(b.carico, x[0]); }).filter(Boolean).join(' · ');
       var giu = '<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="stroke: currentColor"><path d="M6 9l6 6 6-6"></path></svg>';
       var carico = '<section class="pannello-scheda scheda-carico" aria-labelledby="t-carico"><h2 class="carico-titolo" id="t-carico"><button class="carico-apri" type="button" data-azione="carico-apri" aria-expanded="' + !!b.aperto + '" aria-controls="carico-dettaglio">' +
-        '<span class="testi"><span class="titolo">Controllo del carico</span><span class="riassunto">' + esc(riass || 'Nessuna scelta') + '</span></span><span class="freccia">' + giu + '</span></button></h2>' +
+        '<span class="testi"><span class="titolo">' + (misura ? 'Il tuo carico' : 'Controllo del carico') + '</span><span class="riassunto">' + esc(riass || 'Nessuna scelta') + '</span></span><span class="freccia">' + giu + '</span></button></h2>' +
         esitoHtml(esiti) + (b.aperto ? '<div id="carico-dettaglio">' + categorieCarico(b) + '</div>' : '<p class="suggerimento">Tocca per cambiare tessuti, colori, casi speciali, riempimento e additivi.</p>') + '</section>';
-      html = '<div class="scheda">' + hero + carico + vaschetta(b, st, p) + checklist(b, st) +
-        '<div class="cambia-fondo"><button class="pulsante-secondario" type="button" data-azione="cambia-lavaggio">Cambia lavaggio</button></div></div>' +
-        '<div class="barra-avvio" role="region" aria-label="Avvio"><div class="riepilogo">' + statoAvvio + '<span class="riepilogo-breve">' + esc(st.ID) + ' · ' + riepilogoBozza(b, p) + '</span></div>' + avvia + '</div>';
+      html = '<div class="scheda' + (misura ? ' misura' : '') + '">' + hero + carico + vaschetta(b, st, p) + checklist(b, st) +
+        '</div>' +
+        '<div class="barra-avvio" role="region" aria-label="Avvio"><div class="riepilogo">' + statoAvvio + '<span class="riepilogo-breve">' + (vuoto ? 'Su misura' : esc(misura ? 'Su misura' : st.ID) + ' · ' + riepilogoBozza(b, p)) + '</span></div>' + avvia + '</div>';
     }
     return '<div class="interna">' + testa + html + '</div>';
   }
   // Ogni tocco nella Scheda cambia la bozza, la salva e ridisegna lasciando la pagina e il fuoco dove sono
   function cambiaBozza(fn, fuoco) {
     var b = stato.scheda.bozza; if (!b) return;
-    fn(b); salvaBozza(); ridisegna();
+    fn(b); if (b.tipo === 'misura') aggiornaSuggerimento(b); salvaBozza(); ridisegna();
     if (fuoco) { var el = document.querySelector(fuoco); if (el) el.focus({ preventScroll: true }); }
   }
   function scegliProgramma(n) {
     var p = programma(n); if (!p) return;
     cambiaBozza(function (b) {
-      b.programma = String(n);
+      b.programma = String(n); b.manuale = true;
       var tAmm = tempAmmesse(p), gAmm = giriAmmessi(p), oAmm = opzioniAmmesse(p);
       if (tAmm.indexOf(b.temp) < 0) b.temp = tAmm.indexOf(p.Temp_Std) >= 0 ? p.Temp_Std : (tAmm.length ? tAmm[tAmm.length - 1] : 0);
       if (gAmm.indexOf(b.giri) < 0) b.giri = gAmm.length ? gAmm[gAmm.length - 1] : 0;
@@ -2252,7 +2352,9 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
         '<span class="numero-programma" aria-hidden="true">' + esc(p.Programma) + '</span><span class="testi"><span class="nome">' + esc(p.Nome) + '</span><span class="descrizione">' + esc(p.Descrizione || '') + '</span></span>' +
         '<span class="valori"><span>' + (p.Temp_Max == null ? '—' : 'max ' + p.Temp_Max + '°') + '</span><span>' + p.Giri_Max + ' giri</span><span>' + durataTesto(p.Durata_Min).replace('circa ', '') + '</span></span></button></li>';
     }).join('');
-    apriFoglio({ etichetta: 'Scheda lavaggio', titolo: 'Scegli il programma', breve: 'Temperatura e giri si adattano ai limiti del programma scelto.', html: '<ul class="lista-programmi">' + righe + '</ul>' }, document.querySelector('[data-azione="scegli-programma"]'));
+    var st = standardScelto();
+    apriFoglio({ etichetta: 'Scheda lavaggio', titolo: 'Programma o lavaggio', breve: 'Scegli un altro programma per ' + (st && st.misura ? 'il su misura' : esc(st ? st.ID : '')) + ': temperatura e giri si adattano ai suoi limiti. Oppure cambia proprio lavaggio.',
+      html: '<button class="pulsante-secondario scegli-altro" type="button" data-azione="cambia-lavaggio">Scegli un altro lavaggio standard</button><ul class="lista-programmi">' + righe + '</ul>' }, document.querySelector('[data-azione="scegli-programma"]'));
   }
   function spiegaRegola(codice, da) {
     var g = stato.guida.voci.filter(function (x) { return (x.Regole || []).indexOf(codice) >= 0; })[0];
@@ -2260,13 +2362,15 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     var e = stato.scheda.bozza ? esitiBozza(stato.scheda.bozza).filter(function (x) { return x.regola === codice; })[0] : null;
     apriFoglio({ etichetta: 'Controllo del carico', titolo: codice, breve: e ? e.frase : '', codici: [codice] }, da);
   }
-  window.TutorCasa.scheda = { bozza: function () { return stato.scheda.bozza; }, caricoDaStandard: caricoDaStandard };
+  window.TutorCasa.scheda = { bozza: function () { return stato.scheda.bozza; }, caricoDaStandard: caricoDaStandard, simile: function (c) { var st = standardPiuSimile(c); return st ? st.ID : null; } };
   document.addEventListener('click', function (e) {
-    if (attuale !== 'scheda-lavaggio') return;
+    if (attuale !== 'scheda-lavaggio' && attuale !== 'su-misura') return;
     var t = e.target.closest('button'); if (!t || t.disabled) return;
     var d = t.dataset;
-    if (d.temp != null) cambiaBozza(function (b) { b.temp = Number(d.temp); }, '[data-temp="' + d.temp + '"]');
-    else if (d.giri != null) cambiaBozza(function (b) { b.giri = Number(d.giri); }, '[data-giri="' + d.giri + '"]');
+    if (d.temp != null) cambiaBozza(function (b) { b.temp = Number(d.temp); b.manuale = true; }, '[data-temp="' + d.temp + '"]');
+    else if (d.giri != null) cambiaBozza(function (b) { b.giri = Number(d.giri); b.manuale = true; }, '[data-giri="' + d.giri + '"]');
+    else if (d.sporco) cambiaBozza(function (b) { b.carico.sporco = d.sporco; }, '[data-sporco="' + d.sporco + '"]');
+    else if (d.azione === 'usa-suggerimento') cambiaBozza(function (b) { b.manuale = false; }, '[data-azione="scegli-programma"]');
     else if (d.opzione != null) cambiaBozza(function (b) { var i = b.opzioni.indexOf(d.opzione); if (i >= 0) b.opzioni.splice(i, 1); else b.opzioni.push(d.opzione);
       if (d.opzione === 'Partenza Ritardata') b.ritardo = i >= 0 ? 0 : ritardiMacchina()[0]; }, '[data-opzione="' + d.opzione + '"]');
     else if (d.ritardo != null) cambiaBozza(function (b) { b.ritardo = Number(d.ritardo); }, '[data-ritardo="' + d.ritardo + '"]');
@@ -2286,10 +2390,12 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     var n = t.dataset.programma; chiudiFoglio(); setTimeout(function () { scegliProgramma(n); }, 0);
   });
   // Ruotando il tablet la Scheda cambia disposizione
-  window.matchMedia('(orientation: landscape) and (min-width: 900px)').addEventListener('change', function () { if (attuale === 'scheda-lavaggio') ridisegna(); });
+  window.matchMedia('(orientation: landscape) and (min-width: 900px)').addEventListener('change', function () { if (attuale === 'scheda-lavaggio' || attuale === 'su-misura') ridisegna(); });
   document.addEventListener('click', function (e) {
     var a = e.target.closest('[data-standard]');
     if (a) { e.preventDefault(); scegliStandard(a.dataset.standard); location.replace('#scheda-lavaggio'); return; }
+    var m = e.target.closest('a[href="#su-misura"]');
+    if (m && !preparato() && !stato.lavaggio.inCorso) { e.preventDefault(); scegliStandard(ID_MISURA); location.replace('#su-misura'); }
   });
 
 
@@ -2319,7 +2425,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
   function fraseLavatriceHome() {
     var x = stato.lavaggio.inCorso, u = stato.lavaggio.ultimo, pr = preparato();
     if (x) return esc(x.ID_Standard + ' ' + x.Nome) + (inAttesa(x) ? ', parte alle ' + oraDi(x.Partenza_Prevista) + ',' : ',') + ' fine prevista alle ' + oraDi(x.Fine_Prevista) + '.';
-    if (pr) { var b = stato.scheda.bozza; return esc(pr.ID + ' ' + pr.Nome) + (b ? ' · ' + riepilogoBozza(b, programma(b.programma)) : '') + '.'; }
+    if (pr) { var b = stato.scheda.bozza; return esc(nomePreparato(pr)) + (b && b.programma ? ' · ' + riepilogoBozza(b, programma(b.programma)) : ' · carico da comporre') + '.'; }
     if (u) return 'Ultimo: ' + esc(u.ID_Standard + ' ' + u.Nome) + ', ' + quando(u.Fine) + '.';
     return 'Ancora nessun lavaggio registrato.';
   }
@@ -2331,19 +2437,22 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
       (x ? segnala('info', 'In corso', 'fine prevista alle ' + oraDi(x.Fine_Prevista)) : segnala('ok', 'Finito', quando(u.Fine))) +
       '<p class="frase">' + impostazioniLavaggio(l) + '</p></div>';
   }
+  function hrefPreparato() { var b = stato.scheda.bozza; return b && b.tipo === 'misura' ? '#su-misura' : '#scheda-lavaggio'; }
+  function nomePreparato(st) { return st.misura ? 'Su misura' + (st.base ? ' · simile a ' + st.base.ID : '') : st.ID + ' · ' + st.Nome; }
   function azioniPreparato() {
-    return '<div class="azioni-hero"><button class="pulsante-principale" type="button" data-azione="avvia-preparato">Avvia</button>' +
-      '<a class="pulsante-secondario" href="#scheda-lavaggio">Apri la Scheda</a></div>';
+    var b = stato.scheda.bozza, pronto = !(b && b.tipo === 'misura' && !b.programma);
+    return '<div class="azioni-hero"><button class="pulsante-principale" type="button" data-azione="avvia-preparato"' + (pronto ? '' : ' disabled') + '>Avvia</button>' +
+      '<a class="pulsante-secondario" href="' + hrefPreparato() + '">' + (b && b.tipo === 'misura' ? 'Apri il su misura' : 'Apri la Scheda') + '</a></div>';
   }
   function statoPreparato(tag, id) {
     var st = preparato(), b = stato.scheda.bozza || nuovaBozza(st), p = programma(b.programma), es = esitiBozza(b);
-    return '<' + tag + ' class="titolo-stato" id="' + id + '">Pronto: ' + esc(st.ID + ' · ' + st.Nome) + '</' + tag + '>' +
-      '<p class="frase-hero">' + riepilogoBozza(b, p) + '</p>' + statoEsiti(es) + azioniPreparato();
+    return '<' + tag + ' class="titolo-stato" id="' + id + '">Pronto: ' + esc(nomePreparato(st)) + '</' + tag + '>' +
+      '<p class="frase-hero">' + (b.programma ? riepilogoBozza(b, p) : 'Carico ancora da comporre') + '</p>' + (b.programma ? statoEsiti(es) : '') + azioniPreparato();
   }
   function chiediCambio(da) {
     var st = standardScelto(); if (!st) return;
-    apriFoglio({ etichetta: 'Lavaggio preparato', titolo: 'Cambiare lavaggio?', breve: 'Le scelte fatte su ' + st.ID + ' (programma, carico, checklist) si perdono e si riapre l’elenco degli standard.',
-      azioni: '<button class="pulsante-principale" type="button" data-azione="foglio-chiudi">Tieni ' + esc(st.ID) + '</button>' +
+    apriFoglio({ etichetta: 'Lavaggio preparato', titolo: 'Cambiare lavaggio?', breve: 'Le scelte fatte su ' + (st.misura ? 'questo su misura' : st.ID) + ' (programma, carico, checklist) si perdono e si riapre l’elenco degli standard.',
+      azioni: '<button class="pulsante-principale" type="button" data-azione="foglio-chiudi">Tieni ' + (st.misura ? 'il su misura' : esc(st.ID)) + '</button>' +
         '<button class="pulsante-secondario" type="button" data-azione="cambia-conferma">Cambia lavaggio</button>' }, da);
   }
   // Chiude il foglio (che occupa una voce della cronologia) e poi esegue: così la navigazione dopo non si incrocia col «indietro»
@@ -2355,6 +2464,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
   }
   function chiediAvvio(da) {
     var b = stato.scheda.bozza; if (!b || stato.lavaggio.inCorso) return;
+    if (!b.programma) { location.hash = hrefPreparato(); return; }
     var rossi = esitiBozza(b).filter(function (x) { return x.livello === 'rosso'; });
     if (!rossi.length) { avviaLavaggio([]); return; }
     apriFoglio({ etichetta: 'Prima di avviare', titolo: rossi.length === 1 ? 'C’è un allerta rosso' : 'Ci sono ' + rossi.length + ' allerta rossi',
@@ -2366,7 +2476,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
   function avviaLavaggio(confermati) {
     var st = standardScelto(), b = stato.scheda.bozza; if (!st || !b) return Promise.resolve();
     var p = programma(b.programma), adesso = new Date(), esiti = esitiBozza(b), durata = (p && p.Durata_Min) || 0;
-    var x = { Tipo: 'Standard', ID_Standard: st.ID, Nome: st.Nome, Versione_Standard: stato.standard.versione || '', Modello_Macchina: modelloAttuale(),
+    var x = { Tipo: st.misura ? 'Su misura' : 'Standard', ID_Standard: st.misura ? 'Su misura' : st.ID, Nome: st.misura ? (st.base ? 'simile a ' + st.base.ID : 'composto da te') : st.Nome, Simile_A: st.misura && st.base ? st.base.ID : '', Versione_Standard: stato.standard.versione || '', Modello_Macchina: modelloAttuale(),
       Programma: b.programma, Nome_Programma: p ? p.Nome : '', Temp_C: b.temp, Centrifuga_Giri: b.giri, Opzioni: b.opzioni.slice(), Carico: b.carico,
       Allerta: codiciAllerta(esiti), Allerta_Confermati: confermati, Checklist_Fatte: b.spunte.filter(Boolean).length + '/' + b.spunte.length,
       Avvio: adesso.toISOString(), Ritardo_Ore: ritardoBozza(b), Partenza_Prevista: new Date(adesso.getTime() + ritardoBozza(b) * 3600000).toISOString(),
@@ -2374,7 +2484,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     return salvaLavaggio('lavaggio_in_corso', x).then(function () {
       stato.lavaggio.inCorso = x; scartaPreparato();
       // Dalla Scheda si va all'Hub (al suo posto nella cronologia); dalla Home o dall'Hub si resta lì
-      if (attuale === 'scheda-lavaggio') location.replace('#lavatrice'); else ridisegna();
+      if (attuale === 'scheda-lavaggio' || attuale === 'su-misura') location.replace('#lavatrice'); else ridisegna();
     });
   }
   function finisciLavaggio() {
@@ -2395,8 +2505,9 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     if (a === 'avvia-preparato') { if (!stato.scheda.bozza && preparato()) { stato.scheda.bozza = nuovaBozza(preparato()); salvaBozza(); } chiediAvvio(t); }
     else if (a === 'cambia-conferma') dopoFoglio(function () { scartaPreparato(); location.replace('#lavaggi-standard'); });
     else if (a === 'torna-carico') dopoFoglio(function () {
-      if (attuale !== 'scheda-lavaggio') { stato.home.pagina.scheda = 1; if (stato.scheda.bozza) { stato.scheda.bozza.aperto = true; salvaBozza(); } location.hash = '#scheda-lavaggio'; return; }
-      if (schedaOrizzontale()) vaiAPagina('scheda', 1);
+      var mis = stato.scheda.bozza && stato.scheda.bozza.tipo === 'misura', ic = mis ? 0 : 1;
+      if (attuale !== 'scheda-lavaggio' && attuale !== 'su-misura') { stato.home.pagina.scheda = ic; if (stato.scheda.bozza) { stato.scheda.bozza.aperto = true; salvaBozza(); } location.hash = hrefPreparato(); return; }
+      if (schedaOrizzontale()) vaiAPagina('scheda', ic);
       else { cambiaBozza(function (b) { b.aperto = true; }); var c = document.querySelector('.scheda-carico'); if (c) c.scrollIntoView({ block: 'start' }); }
       var f = document.querySelector('.scheda-carico .tasto-spiega, .scheda-carico .categoria'); if (f) f.focus({ preventScroll: true });
     });
@@ -2698,7 +2809,7 @@ html.foglio-aperto, html.foglio-aperto body { overflow: hidden; }
     if (id === 'home' && direzione) stato.home.pagina.info = 0;
     if (id === 'info-home' && direzione) stato.home.posto = 0;
     if (direzione) nascondiFoglio();
-    schermo.innerHTML = id === 'home' ? disegnaHome() : id === 'lavatrice' ? disegnaHub() : id === 'guida' ? disegnaGuida() : id === 'lavaggi-standard' ? disegnaElencoStandard() : id === 'scheda-lavaggio' ? disegnaScheda() : id === 'dati' ? disegnaDati() : id === 'vetrina' ? disegnaVetrina() : id === 'info-home' ? disegnaInfoHome() : id === 'profilo' ? disegnaProfilo() : id === 'database' ? disegnaDatabase() : disegnaInterna(id);
+    schermo.innerHTML = id === 'home' ? disegnaHome() : id === 'lavatrice' ? disegnaHub() : id === 'guida' ? disegnaGuida() : id === 'lavaggi-standard' ? disegnaElencoStandard() : id === 'scheda-lavaggio' ? disegnaScheda() : id === 'su-misura' ? disegnaSuMisura() : id === 'dati' ? disegnaDati() : id === 'vetrina' ? disegnaVetrina() : id === 'info-home' ? disegnaInfoHome() : id === 'profilo' ? disegnaProfilo() : id === 'database' ? disegnaDatabase() : disegnaInterna(id);
     schermo.className = 'schermo ' + direzione;
     misuraTestata(); segnaScorrimento();
     document.title = id === 'home' ? 'Tutor Casa' : SCHERMATE[id].titolo + ' · Tutor Casa';
